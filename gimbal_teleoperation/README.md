@@ -15,3 +15,5 @@ TODO: Outline the techniques for setting up software, including:
 * What the code files are and what they do
 * Anything to install or setup
 * How to run the teleoperation (NOTE: The other unity repo will be required for this.)
+
+For now, to setup the project just run `pip install -e .` inside a Python virtual environment.
