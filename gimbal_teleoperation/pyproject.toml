@@ -4,7 +4,14 @@ build-backend ="setuptools.build_meta"
 
 [project]
 name = "heq_gimbal"
-version = "0.1.0"
+description = "HoloLens to Gimbal Teleoperation Bridge"
+requires-python = ">=3.9"
+dependencies = ["pyserial>=3.5"]
 
 [tool.setuptools]
-modules = ["heq_gimbal"]
+py-modules = [
+    "heq_protocol",
+    "udp_reeciver",
+    "gimbal_controller",
+    "singleton",
+]
