@@ -1,17 +1,14 @@
 {
     "udp": {
-        "ip": "0.0.0.0",
-        "port": 5005,
-        "timeout_s": 0.25
+        "listen_ip": "0.0.0.0",
+        "listen_port": 5005
     },
     "serial": {
         "port": "COM5",
         "baud": 115200
     },
     "control": {
-        "update_hz": 60,
-        "dry_run": false,
-        "return_to_center_on_exit": true
+        "update_hz": 60
     },
     "limits": {
         "roll": [-45.0, 45.0],
@@ -19,26 +16,21 @@
         "yaw": [-135.0, 135.0]
     },
     "mapping": {
-        "enable_roll": true,
-        "enable_pitch": true,
-        "enable_yaw": true,
-
         "invert_roll": true,
         "invert_pitch": false,
         "invert_yaw": true,
-
         "roll_offset": 0.0,
         "pitch_offset": 0.0,
-        "yaw_offset": 0.0,
-
-        "roll_gain": 1.0,
-        "pitch_gain": 1.0,
-        "yaw_gain": 1.0
+        "yaw_offset": 0.0
     },
-    "safety": {
-        "deadband_deg": 0.25,
-        "smoothing_alpha": 0.85,
-        "max_step_deg_per_update": 12.0,
-        "command_timeout_s": 0.35
+    "smoothing": {
+        "alpha": 0.85,
+        "max_step_deg": 12.0,
+        "deadband_deg": 0.25
+    },
+    "failsafe": {
+        "signal_lost_after_s": 0.35,
+        "recenter_after_s": 2.0,
+        "return_to_center_on_exit": true
     }
 }
