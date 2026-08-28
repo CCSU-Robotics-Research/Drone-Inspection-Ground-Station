@@ -18,9 +18,9 @@ HoloLens sends its roll/pitch/yaw packets to the UDPReceiver via UDP, which are 
 
 Inside `programmatic_tests/`, you will find some test scripts for testing gimbal motion without HoloLens.
 
-* `hololens_fake_test.py` - Impersonates the HoloLens by sending dynamic head-like motion over UDP to the running bridge. Tests real production path without a headset.
-* `move_gimbal_test.py` - Direct serial exercise of the protocol. Cetner, speed mode, and angle mode with live telemetry.
-* `read_gimbal_telemetry.py` - Reads the live telemetry from the gimbal. To save a log, use argument `--output file.log`.
+* `hololens_fake_test.py` - Impersonates the HoloLens by sending dynamic head-like motion over UDP to the running bridge. Tests real production path without a headset. Run `python main.py --telemetry` from a terminal, then run this file from another terminal.
+* `move_gimbal_test.py` - Direct serial exercise of the protocol. Cetner, speed mode, and angle mode with live telemetry. Run this file directly in the terminal.
+* `read_gimbal_telemetry.py` - Reads the live telemetry from the gimbal. To save a log, use argument `--output file.log`. Run this file directly in the terminal.
 
 These 3 files read from `gimbal_config.json` with dynamic overrides available for `--port` as needed.
 
