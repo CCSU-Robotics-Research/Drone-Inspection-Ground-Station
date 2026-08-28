@@ -18,7 +18,7 @@ import serial
 _REPO_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_DIR))
 
-from heq_protocol import (
+from heq_protocol import (  # noqa: E402
     ANGLE_PUSH_V2_LEN,
     CMD_ANGLE_PUSH,
     CMD_GIMBAL_CONTROL,

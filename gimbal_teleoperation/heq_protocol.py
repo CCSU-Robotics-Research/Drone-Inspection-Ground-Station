@@ -113,7 +113,7 @@ def calc_crc32(data: bytes) -> int:
     """Return the CRC32 of a data segment.
 
     Note the original function from the gimbal protocol docs is
-    in C. This is the Python adaptation of the same function."
+    in C. This is the Python adaptation of the same function.
     """
     nreg = 0xFFFFFFFF
     for b in data:
@@ -135,7 +135,7 @@ def build_control_payload(
 ) -> bytes:
     """Return the 13-byte data segment of a 0x85 control command.
 
-    int8 mode, six int16 fields in units of 001 degrees (angles)
+    int8 mode, six int16 fields in units of 0.01 degrees (angles)
     and 0.01 degrees/second (speeds), in the order roll/pitch/yaw
     angle then roll/pitch/yaw speed. ``mode`` is one of the ``MODE_*``
     constants from above.
@@ -155,7 +155,7 @@ def build_control_payload(
 def build_packet(command: int, data: bytes = b"") -> bytes:
     """Return a complete on-wire frame for ``command`` and ``data``.
 
-    Adds the fixed header byte, version, length, header chcksum, and
+    Adds the fixed header byte, version, length, header checksum, and
     the trailing CRC32 when the data segment is non-empty.
     """
     length = len(data)
@@ -179,7 +179,7 @@ class HEQParser:
 
     Takes in raw chunks as they arrive from serial; buffers partial
     frames across calls, discards junk between frames, and returns
-    every complete frame found. One pearser instance holds the state
+    every complete frame found. One parser instance holds the state
     of exactly one byte stream, so separate instances per stream
     should be used.
     """
@@ -196,7 +196,7 @@ class HEQParser:
             start = self.buffer.find(b"\xAE")
             if start == -1:
                 # No header byte anywhere. Drop the bytes, keep
-                # a small stail in case a frame starts mid-chunk later
+                # a small tail in case a frame starts mid-chunk later
                 if len(self.buffer) > 1024:
                     self.buffer = self.buffer[-16:]
                 break
@@ -212,7 +212,7 @@ class HEQParser:
             command = self.buffer[3]
             header_checksum = self.buffer[4]
 
-            total_len = 5 + lenght + (4 if length > 0 else 0)
+            total_len = 5 + length + (4 if length > 0 else 0)
             if len(self.buffer) < total_len:
                 break
             
@@ -252,7 +252,7 @@ class HEQParser:
 def decode_0x14(data: bytes) -> dict:
     """Decode a 0x14 function-reading return."""
     if len(data) != 15:
-        raise valueError(
+        raise ValueError(
             f"0x14 payload must be 15 bytes, got {len(data)}"
         )
 
@@ -269,7 +269,7 @@ def decode_0x87_v2(data: bytes) -> dict:
     Returns IMU and Hall angles plus angular rates, all divided by 100
     per the protocol's fixed-point encoding.
     """
-    if len(data) != ANGLE_PUSH_LEN:
+    if len(data) != ANGLE_PUSH_V2_LEN:
         raise ValueError(
             f"0x87 payload must be 24 bytes, got {len(data)}"
         )

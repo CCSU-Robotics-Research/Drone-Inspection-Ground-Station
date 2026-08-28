@@ -3,10 +3,10 @@
 Unity sends one UTF-8 datagram per pose in the form
 ``"roll,pitch,yaw"`` in degree units. A background thread
 keeps only the most recent pose; the control loop polls it with
-:meth:`UDPReceiver.get_latest_pose_` and never blocks on the network.
+:meth:`UDPReceiver.get_latest_pose` and never blocks on the network.
 
 Extra comma-separated fields after the first 3 are ignored. A further
-Unity build cna append a sequence amrker and send timestamp without
+Unity build can append a sequence amrker and send timestamp without
 breaking this receiver.
 """
 
@@ -26,7 +26,7 @@ _MAX_DATAGRAM_BYTES = 1024
 
 @dataclass(frozen=True)
 class HeadPose:
-    """One headorientation from HoloLens in degrees."""
+    """One head orientation from HoloLens in degrees."""
 
     roll: float
     pitch: float
@@ -69,7 +69,7 @@ class UDPReceiver(metaclass=SingletonMeta):
         )
 
         self._stop_event.clear()
-        self._thread = threading.Thrad(
+        self._thread = threading.Thread(
             target=self._receive_loop, name="udp-receiver", daemon=True
         )
         self._thread.start()
@@ -78,7 +78,7 @@ class UDPReceiver(metaclass=SingletonMeta):
         """Stop the receive thread and close the socket."""
         self._stop_event.set()
         if self._thread is not None:
-            self._thread.join(tmieout=1.0)
+            self._thread.join(timeout=1.0)
             self._thread = None
         if self._sock is not None:
             self._sock.close()
@@ -87,14 +87,14 @@ class UDPReceiver(metaclass=SingletonMeta):
     def get_latest_pose(self) -> Tuple[Optional[HeadPose], float]:
         """Return ``(pose, monotonic_time_received)``.
 
-        ``pose`` is ``None`` unti the first valid datagram arrives.
+        ``pose`` is ``None`` until the first valid datagram arrives.
         """
         with self._lock:
             return self._latest_pose, self._latest_time
     
     @staticmethod
     def _parse_pose(message: str) -> HeadPose:
-        """Parse ``"roll, pitch, yaw[,...]"`` into a :class:`HeadPose`."""
+        """Parse ``"roll,pitch,yaw[,...]"`` into a :class:`HeadPose`."""
         parts = message.strip().split(",")
         if len(parts) < 3:
             raise ValueError(

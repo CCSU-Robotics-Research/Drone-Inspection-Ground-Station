@@ -14,14 +14,11 @@ The loop starts with :meth:`start`, and is stopped with :meth:`stop`.
   teleoperation, bidirectional LoRa modules will be required.
   For now, when piloting the drone, disable telemetry.
 
-Failsave behavior if packets are dropped::
+Failsafe behavior if packets are dropped::
 
 * age <= signal_lost_after_s   LIVE      track the head normally
 * age <= recenter_after_s      HOLD      freeze at the last angles
 * age >  recenter_after_s      RECENTER  glide gently to center
-
-For the recentering, there is a fixed rate that's configurable
-which is ``_RECENTER_RATE_DEG_S``, see below.
 """
 
 import enum
@@ -55,6 +52,7 @@ _INPUT_FLUSH_PERIOD_S = 1.0
 _STATUS_LOG_PERIOD_S = 1.0
 _EXIT_CENTER_SETTLE_S = 0.5
 
+
 class ControlState(enum.Enum):
     """Failsafe state derived from the age of the newest pose."""
 
@@ -66,15 +64,19 @@ class ControlState(enum.Enum):
 def _clamp(x: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, x))
 
+
 def _apply_deadband(x: float, deadband: float) -> float:
     return 0.0 if abs(x) < deadband else x
 
+
 def _smooth(prev: float, target: float, alpha: float) -> float:
-    return prev + alopha * (target - prev)
+    return prev + alpha * (target - prev)
+
 
 def _limit_step(prev: float, target: float, max_step: float) -> float:
     delta = _clamp(target - prev, -max_step, max_step)
     return prev + delta
+
 
 class GimbalController(metaclass=SingletonMeta):
     """Handles the serial link and control loop."""
@@ -83,10 +85,10 @@ class GimbalController(metaclass=SingletonMeta):
         self,
         config: dict,
         receiver: UDPReceiver,
-        telemtry_enabled: bool = False,
+        telemetry_enabled: bool = False,
     ) -> None:
         self._receiver = receiver
-        self._telemetry_enabled = _telemetry_enabled
+        self._telemetry_enabled = telemetry_enabled
 
         self._serial_port = config["serial"]["port"]
         self._serial_baud = int(config["serial"]["baud"])
@@ -95,7 +97,7 @@ class GimbalController(metaclass=SingletonMeta):
 
         limits = config["limits"]
         self._limits = {
-            axis: (float(limits[axis][0]), float(lmits[axis][1]))
+            axis: (float(limits[axis][0]), float(limits[axis][1]))
             for axis in ("roll", "pitch", "yaw")
         }
 
@@ -206,7 +208,7 @@ class GimbalController(metaclass=SingletonMeta):
                 stopbits=serial.STOPBITS_ONE,
                 timeout=_SERIAL_READ_TIMEOUT_S,
             )
-        except serial.serialException as exc:
+        except serial.SerialException as exc:
             found = ", ".join(
                 p.device for p in list_ports.comports()
             ) or "none"
@@ -270,7 +272,7 @@ class GimbalController(metaclass=SingletonMeta):
         """Fixed-rate teleoperation loop: reads a head pose, maps,
         smooths, and sends.
         """
-        period = 1.0 = self._update_hz
+        period = 1.0 / self._update_hz
         next_tick = time.monotonic()
 
         flush_every = max(1, int(self._update_hz * _INPUT_FLUSH_PERIOD_S))
@@ -301,38 +303,38 @@ class GimbalController(metaclass=SingletonMeta):
                 _LOG.info("Control state: %s", new_state.value)
                 state = new_state
         
-        smoothed_roll = _smooth(self._roll, target[0], self._alpha)
-        smoothed_pitch = _smooth(self._pitch, target[1], self._alpha)
-        smoothed_yaw = _smooth(self._yaw, target[2], self._alpha)
+            smoothed_roll = _smooth(self._roll, target[0], self._alpha)
+            smoothed_pitch = _smooth(self._pitch, target[1], self._alpha)
+            smoothed_yaw = _smooth(self._yaw, target[2], self._alpha)
 
-        self._roll = _limit_step(self._roll, smoothed_roll, max_step)
-        self._pitch = _limit_step(self._pitch, smoothed_pitch, max_step)
-        self._yaw = _limit_step(self._yaw, smoothed_yaw, max_step)
+            self._roll = _limit_step(self._roll, smoothed_roll, max_step)
+            self._pitch = _limit_step(self._pitch, smoothed_pitch, max_step)
+            self._yaw = _limit_step(self._yaw, smoothed_yaw, max_step)
 
-        try:
-            self._send_angle(self._roll, self._pitch, self._yaw)
+            try:
+                self._send_angle(self._roll, self._pitch, self._yaw)
 
-            # If there is no telemetry enabled, flush the buffer for
-            # bounds checking.
-            tick += 1
-            if not self._telemetry_enabled and tick % flush_every == 0:
-                self._ser.reset_input_buffer()
-        except serial.SerialException as exc:
-            _LOG.error(
-                "Serial write failed (%s); stopping control loop", exc
-            )
-            self._stop_event.set()
-            break
-        
-        if now - last_status_log > _STATUS_LOG_PERIOD_S:
-            _LOG.debug(
-                "%s | cmd r/p/y = %.2f, %.2f, %.2f",
-                state.value,
-                self._roll,
-                self._pitch,
-                self._yaw,
-            )
-            last_status_log = now
+                # If there is no telemetry enabled, flush the buffer for
+                # bounds checking.
+                tick += 1
+                if not self._telemetry_enabled and tick % flush_every == 0:
+                    self._ser.reset_input_buffer()
+            except serial.SerialException as exc:
+                _LOG.error(
+                    "Serial write failed (%s); stopping control loop", exc
+                )
+                self._stop_event.set()
+                break
+            
+            if now - last_status_log > _STATUS_LOG_PERIOD_S:
+                _LOG.debug(
+                    "%s | cmd r/p/y = %.2f, %.2f, %.2f",
+                    state.value,
+                    self._roll,
+                    self._pitch,
+                    self._yaw,
+                )
+                last_status_log = now
 
             next_tick += period
             sleep_time = next_tick - time.monotonic()
@@ -342,7 +344,7 @@ class GimbalController(metaclass=SingletonMeta):
                 # Resynchronize time.
                 next_tick = time.monotonic()
         
- def _telemetry_loop(self) -> None:
+    def _telemetry_loop(self) -> None:
         """Parse 0x87 attitude pushes and cache the newest one."""
         last_log = 0.0
 

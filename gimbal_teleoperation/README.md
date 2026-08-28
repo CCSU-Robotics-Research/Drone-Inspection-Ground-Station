@@ -1,13 +1,13 @@
 # Gimbal Teleoperation with HoloLens
 
-This subdirectory handles communication from the HoloLens to the gruond station computer via UDP and ultimately to the HEQ G-Port gimbal via UART serial.
+This subdirectory handles communication from the HoloLens to the station computer via UDP and ultimately to the HEQ G-Port gimbal via UART serial.
 
 HoloLens sends its roll/pitch/yaw packets to the UDPReceiver via UDP, which are parsed into HeadPoses and forwarded to the GimbalController. These orientations are assembled into UART frames to communicate with the gimbal wirelessly.
 
 ## Primary Repo Components
 
 `main.py` - Entry point. Parses the CLI for arguments, loads config, constructs and starts UDPReceiver and GimbalController, handles termination.  
-`udp_receiver.py` - Singleton class for `UDPReceiver`. Owns the listen socket; a background thread keps onlyt eh newest head pose, timestamped with a monotonic clock.  
+`udp_receiver.py` - Singleton class for `UDPReceiver`. Owns the listen socket; a background thread keeps only the newest head pose, timestamped with a monotonic clock.  
 `gimbal_controller.py` - Singleton class for `GimbalController`. Serves as an adapter between the UDPReceiver and the serial port for wireless transmission. Maps head pose to gimbal angles (invert, offset, deadbands, and limits), smooths and slew-limits, assembles packets and transmits them, and runs the pose-loss failsafe. Optionally parses telemetry.  
 `heq_protocol.py` - Protocol library and helper functions for the gimbal, including frame building, vendor-variant CRC32, the stream parser, and payload decoders.  
 `singleton.py` - Thread-safe `SingletonMeta` used by the `UDPReceiver` and `GimbalController` classes above.  
@@ -19,7 +19,7 @@ HoloLens sends its roll/pitch/yaw packets to the UDPReceiver via UDP, which are 
 Inside `programmatic_tests/`, you will find some test scripts for testing gimbal motion without HoloLens.
 
 * `hololens_fake_test.py` - Impersonates the HoloLens by sending dynamic head-like motion over UDP to the running bridge. Tests real production path without a headset. Run `python main.py --telemetry` from a terminal, then run this file from another terminal.
-* `move_gimbal_test.py` - Direct serial exercise of the protocol. Cetner, speed mode, and angle mode with live telemetry. Run this file directly in the terminal.
+* `move_gimbal_test.py` - Direct serial exercise of the protocol. Center, speed mode, and angle mode with live telemetry. Run this file directly in the terminal.
 * `read_gimbal_telemetry.py` - Reads the live telemetry from the gimbal. To save a log, use argument `--output file.log`. Run this file directly in the terminal.
 
 These 3 files read from `gimbal_config.json` with dynamic overrides available for `--port` as needed.
@@ -34,12 +34,12 @@ These 3 files read from `gimbal_config.json` with dynamic overrides available fo
 * HEQ G-PORT 3-axis Gimbal
 * Wiring kit with JST and DuPont connectors, available in AIH 107
 * USB to UART adapter for ground testing
-* LoRA UART radios with SMA antennas for wireless testing or drone flight
+* LoRa UART radios with SMA antennas for wireless testing or drone flight
 * Power source: can be bench power supply or a battery with a voltage regulator
 * Voltmeter
 * In case something breaks, soldering equipment.
 
-_**For your convenience, it's strongly recommended to study the protocol documentation PDF file in Teams. This will make comprehension of setup easier_
+_For your convenience, it's strongly recommended to study the protocol documentation PDF file in Teams. This will make comprehension of setup easier._
 
 **Steps:**
 1. TODO: This will be written when the system is finalized and assembled.

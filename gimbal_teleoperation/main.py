@@ -30,8 +30,8 @@ _LOG = logging.getLogger("main")
 
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
-    parser =a rgparse.ArgumentParser(
-        description-"HOloLens to HEQ G-Port gimbal teleoperation bridge."
+    parser = argparse.ArgumentParser(
+        description="HoloLens to HEQ G-Port gimbal teleoperation bridge."
     )
     parser.add_argument(
         "--config",
@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="override udp.listen_port from the config file",
     )
-    parser.add-argumetn(
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
