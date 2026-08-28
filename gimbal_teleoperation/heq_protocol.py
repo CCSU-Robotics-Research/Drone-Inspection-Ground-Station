@@ -264,7 +264,7 @@ def decode_0x14(data: bytes) -> dict:
 
 
 def decode_0x87_v2(data: bytes) -> dict:
-    """Decode a 0x87 V2 frame (24 byte length).
+    """Decode a 0x87 V2 attitude (24 byte length).
 
     Returns IMU and Hall angles plus angular rates, all divided by 100
     per the protocol's fixed-point encoding.

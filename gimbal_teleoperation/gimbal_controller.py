@@ -189,7 +189,7 @@ class GimbalController(metaclass=SingletonMeta):
         )
     
     def get_latest_telemetry(self) -> Optional[dict]:
-        """Return the newest decoded 0x87 packet, ``None`` if failed
+        """Return the newest decoded 0x87 attitude, ``None`` if failed
         or if telemetry is disabled.
         """
         with self._telemetry_lock:

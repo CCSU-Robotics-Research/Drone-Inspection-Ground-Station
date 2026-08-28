@@ -65,7 +65,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_onfig(path: Path) -> dict:
+def load_config(path: Path) -> dict:
     """Load and return the JSON configuration."""
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
