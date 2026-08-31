@@ -145,7 +145,7 @@ def main() -> None:
         print("\nStopped by user.")
     finally:
         sock.close()
-        print("Done. The bridge should now hold, then glide to center.")
+        print("Returning gimbal to center...")
 
 
 if __name__ == "__main__":
