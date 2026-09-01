@@ -16,9 +16,12 @@ The loop starts with :meth:`start`, and is stopped with :meth:`stop`.
 
 Failsafe behavior if packets are dropped::
 
-* age <= signal_lost_after_s   LIVE      track the head normally
-* age <= recenter_after_s      HOLD      freeze at the last angles
-* age >  recenter_after_s      RECENTER  glide gently to center
+* age <= signal_lost_after_s   LIVE   track the head normally
+* age >  signal_lost_after_s   HOLD   freeze at the last angles
+  until poses resume
+
+When the program terminates (Ctrl+C or the control loop dying),
+the gimbal returns to its center position immediately.
 """
 
 import enum
@@ -46,11 +49,9 @@ from udp_receiver import HeadPose, UDPReceiver
 
 _LOG = logging.getLogger(__name__)
 
-_RECENTER_RATE_DEG_S = 30.0
 _SERIAL_READ_TIMEOUT_S = 0.03
 _INPUT_FLUSH_PERIOD_S = 1.0
 _STATUS_LOG_PERIOD_S = 1.0
-_EXIT_CENTER_SETTLE_S = 0.5
 
 
 class ControlState(enum.Enum):
@@ -58,7 +59,6 @@ class ControlState(enum.Enum):
 
     LIVE = "live"
     HOLD = "hold"
-    RECENTER = "recenter"
 
 
 def _clamp(x: float, lo: float, hi: float) -> float:
@@ -118,10 +118,6 @@ class GimbalController(metaclass=SingletonMeta):
 
         failsafe = config["failsafe"]
         self._signal_lost_after_s = float(failsafe["signal_lost_after_s"])
-        self._recenter_after_s = float(failsafe["recenter_after_s"])
-        self._center_on_exit = bool(failsafe["return_to_center_on_exit"])
-
-        self._recenter_step = _RECENTER_RATE_DEG_S / self._update_hz
 
         # Current commanded angles. The loop uses and mutates these
         self._roll = 0.0
@@ -165,7 +161,7 @@ class GimbalController(metaclass=SingletonMeta):
             _LOG.info("Telemetry enabled")
 
     def stop(self) -> None:
-        """Stops the loops, optionally re-centers, and closes the port."""
+        """Stops the loops, re-centers the gimbal, and closes the port."""
         self._stop_event.set()
 
         if self._control_thread is not None:
@@ -175,8 +171,7 @@ class GimbalController(metaclass=SingletonMeta):
             self._telemetry_thread.join(timeout=2.0)
             self._telemetry_thread = None
         
-        if self._center_on_exit:
-            self._send_return_to_center()
+        self._send_return_to_center()
         
         if self._ser is not None:
             self._ser.close()
@@ -264,7 +259,6 @@ class GimbalController(metaclass=SingletonMeta):
             payload = build_control_payload(mode=MODE_RETURN_TO_CENTER)
             self._ser.write(build_packet(CMD_GIMBAL_CONTROL, payload))
             self._ser.flush()
-            time.sleep(_EXIT_CENTER_SETTLE_S)
         except serial.SerialException as exc:
             _LOG.error("Center-on-exit failed: %s", exc)
     
@@ -286,11 +280,7 @@ class GimbalController(metaclass=SingletonMeta):
             pose, received_at = self._receiver.get_latest_pose()
             age = now - received_at
 
-            if pose is None or age > self._recenter_after_s:
-                new_state = ControlState.RECENTER
-                target = (0.0, 0.0, 0.0)
-                max_step = self._recenter_step
-            elif age > self._signal_lost_after_s:
+            if pose is None or age > self._signal_lost_after_s:
                 new_state = ControlState.HOLD
                 target = (self._roll, self._pitch, self._yaw)
                 max_step = self._max_step

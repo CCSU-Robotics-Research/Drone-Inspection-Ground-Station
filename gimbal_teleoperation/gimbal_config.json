@@ -29,8 +29,6 @@
         "deadband_deg": 0.25
     },
     "failsafe": {
-        "signal_lost_after_s": 0.35,
-        "recenter_after_s": 2.0,
-        "return_to_center_on_exit": true
+        "signal_lost_after_s": 0.35
     }
 }

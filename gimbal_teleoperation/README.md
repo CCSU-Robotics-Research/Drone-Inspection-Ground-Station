@@ -4,7 +4,7 @@ This subdirectory handles communication from the HoloLens to the station compute
 
 HoloLens sends its roll/pitch/yaw packets to the UDPReceiver via UDP, which are parsed into HeadPoses and forwarded to the GimbalController. These orientations are assembled into UART frames to communicate with the gimbal wirelessly.
 
-## Primary Repo Components
+## Primary Components
 
 `main.py` - Entry point. Parses the CLI for arguments, loads config, constructs and starts UDPReceiver and GimbalController, handles termination.  
 `udp_receiver.py` - Singleton class for `UDPReceiver`. Owns the listen socket; a background thread keeps only the newest head pose, timestamped with a monotonic clock.  
@@ -67,7 +67,7 @@ python main.py --serial-port COM7   # one-off port override
 python main.py -v                   # debug logging
 ```
 
-The Unity repo must be running (or `hololens_fake_test.py`) for poses to arrive. On startup with no poses, the controller gently holds center. On shutdown (Ctrl+C), the gimbal is recentered if `failsafe.return_to_center_on_exit` is true.
+The Unity repo must be running (or `hololens_fake_test.py`) for poses to arrive. On startup with no poses, the controller gently holds center. On shutdown (Ctrl+C), the gimbal returns to its center position.
 
 `--telemetry` is off by default on purpose: the current radio modules do not support simultaneous bidirectional traffic well, and uplink telemetry alongside downlink commands increases packet loss. Enable it only with a wired USB connection on the bench or with upgraded LoRa radio modules.
 
@@ -81,4 +81,4 @@ These are default settings from prior usage; you can tweak them as needed to fit
 * `limits` - Mechanical clamps per axis of rotation in degrees.
 * `mapping` - Per-axis inversion and offset applied to head angles.
 * `smoothing` - Exponential smoothing `alpha`, per-tick slew limit `max_step_deg`, and `deadband_deg` around zero.
-* `failsafe` - Pose is considered lost after `signal_lost_after_s` (gimbal holds its pose); after `recenter_after_s` with no poses the gimbal returns to center position. This can be adjusted for aggressive snapping return-to-center motion.
+* `failsafe` - Pose is considered lost after `signal_lost_after_s`; the gimbal then holds its pose until poses resume. Recentering only happens when the program terminates.

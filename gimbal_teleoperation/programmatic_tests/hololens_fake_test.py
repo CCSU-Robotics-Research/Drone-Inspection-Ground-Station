@@ -145,7 +145,7 @@ def main() -> None:
         print("\nStopped by user.")
     finally:
         sock.close()
-        print("Returning gimbal to center...")
+        print("Motion stopped. The last transmitted pose will be held.")
 
 
 if __name__ == "__main__":
