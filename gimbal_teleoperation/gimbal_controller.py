@@ -21,7 +21,7 @@ Failsafe behavior if packets are dropped::
   until poses resume
 
 When the program terminates (Ctrl+C or the control loop dying),
-the gimbal returns to its center position immediately.
+the radio queue is flushed, then the gimbal returns to center.
 """
 
 import enum
@@ -251,14 +251,23 @@ class GimbalController(metaclass=SingletonMeta):
         self._ser.flush()
 
     def _send_return_to_center(self) -> None:
-        """Commands gimbal to return to center."""
+        """Commands gimbal to return to center after flushing out leftover
+        packets in the LoRa radio queue.
+        """
         if self._ser is None:
             return
+        _LOG.info("Flushing radio queue")
+        time.sleep(1.0)
         _LOG.info("Returning gimbal to center")
         try:
-            payload = build_control_payload(mode=MODE_RETURN_TO_CENTER)
-            self._ser.write(build_packet(CMD_GIMBAL_CONTROL, payload))
-            self._ser.flush()
+            pkt = build_packet(
+                CMD_GIMBAL_CONTROL,
+                build_control_payload(mode=MODE_RETURN_TO_CENTER),
+            )
+            for _ in range(3):
+                self._ser.write(pkt)
+                self._ser.flush()
+                time.sleep(0.2)
         except serial.SerialException as exc:
             _LOG.error("Center-on-exit failed: %s", exc)
     
