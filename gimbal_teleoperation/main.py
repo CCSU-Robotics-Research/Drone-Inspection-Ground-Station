@@ -19,6 +19,7 @@ import json
 import logging
 import signal
 import threading
+import time
 from pathlib import Path
 
 from gimbal_controller import GimbalController
@@ -119,6 +120,9 @@ def main() -> None:
         controller.stop()
         receiver.stop()
         _LOG.info("Bridge stopped")
+
+        # Allow wireless packets to flush
+        time.sleep(1)
 
 
 if __name__ == "__main__":
