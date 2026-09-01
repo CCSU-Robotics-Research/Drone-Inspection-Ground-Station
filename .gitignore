@@ -1,0 +1,7 @@
+.venv/
+venv/
+
+__pycache__
+*.pyc
+
+heq_gimbal.egg-info/
