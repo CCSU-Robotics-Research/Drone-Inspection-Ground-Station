@@ -268,6 +268,8 @@ def decode_0x87_v2(data: bytes) -> dict:
 
     Returns IMU and Hall angles plus angular rates, all divided by 100
     per the protocol's fixed-point encoding.
+
+    The V1 protocol from the documentation was not implemented.
     """
     if len(data) != ANGLE_PUSH_V2_LEN:
         raise ValueError(
