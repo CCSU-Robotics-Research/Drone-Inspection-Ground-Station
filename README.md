@@ -8,3 +8,7 @@ This repository houses all of the components for the ground station of the drone
 ## Repository Map
 
 [gimbal_teleoperation/](gimbal_teleoperation/) - Contains all code for wireless teleoperation of the Gimbal
+
+## Setup
+
+TODO: This will be hopefully coming soon. For now, each subdirectory of work has to be setup individually.
