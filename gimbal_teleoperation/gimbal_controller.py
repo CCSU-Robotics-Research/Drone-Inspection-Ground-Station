@@ -5,9 +5,9 @@ fixed-rate control loop lives here.
 
 The loop starts with :meth:`start`, and is stopped with :meth:`stop`.
 
-* Every tick, the newest head pose is read from :class:`~udp_receiver.UDPReceiver`
-  and mapped into gimbal angles (axis inversion, offsets,
-  deadband, limit clamping).
+* Every tick, the newest head pose is read from
+  :class:`~udp_receiver.UDPReceiver` and mapped into gimbal angles
+  (axis inversion, offsets, deadband, limit clamping).
 * The result is smoothed before being sent to the gimbal as
   0x85 packets.
 * Telemetry is also recorded if desired, though for wireless
