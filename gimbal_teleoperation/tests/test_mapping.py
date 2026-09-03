@@ -50,6 +50,52 @@ def make_config() -> dict:
 def make_controller(config: dict) -> GimbalController:
     return GimbalController(config, receiver=None)
 
+
+class TestMapping:
+
+    def test_passthrough_no_inversion_or_offset(self):
+        ctrl = make_controller(make_config())
+        pose = HeadPose(roll=10.0, pitch=-20.0, yaw=50.0)
+        assert ctrl._map_head_to_gimbal(pose) == (10.0, -20.0, 50.0)
+    
+    def test_inversion_flips_only_flagged_axes(self):
+        config = make_config()
+        config["mapping"]["invert_roll"] = True
+        config["mapping"]["invert_yaw"] = True
+        ctrl = make_controller(config)
+        pose = HeadPose(roll=10.0, pitch=-20.0, yaw=50.0)
+        assert ctrl._map_head_to_gimbal(pose) == (-10.0, -20.0, -50.0)
+    
+    def test_offset_applied_after_inversion(self):
+        config = make_config()
+        config["mapping"]["invert_roll"] = True
+        config["mapping"]["roll_offset"] = 5.0
+        ctrl = make_controller(config)
+        pose = HeadPose(roll=10.0, pitch=0.0, yaw=0.0)
+        roll, _, _ = ctrl._map_head_to_gimbal(pose)
+        assert roll == potest.approx(-5.0) # (-10) + 5
+    
+    def test_ddaeadband_zeroes_small_values(self):
+        ctrl = make_controller(make_config())
+        pose = HeadPose(roll=0.2, pitch=-0.24, yaw=0.249)
+        assert ctrl._map_head_to_gimbal(pose) == (0.0, 0.0, 0.0)
+
+    def test_deadband_applies_after_offset(self):
+        # Nonzero head angle that lands inside deadband after offset
+        # should map to zero.
+        config = make_config()
+        config["mapping"]["yaw_offset"] = -0.9
+        ctrl = make_controller(config)
+        pose = HeadPose(roll=0.0, pitch=0.0, yaw=1.0)
+        _, _, yaw = ctrl._map_head_to_gimbal(pose)
+        assert yaw == 0.0
+    
+    def test_limits_clamp_both_directions(self):
+        ctrl = make_controller(make_config())
+        pose = HeadPose(roll=999.0, pitch=-999.0, yaw=-999.0)
+        assert ctrl._map_head_to_gimbal(pose) == (45.0, -135.0, -135.0)
+
+
 class TestHelpers:
 
     @pytest.mark.parametrize(
