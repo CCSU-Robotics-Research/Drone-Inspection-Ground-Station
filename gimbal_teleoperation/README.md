@@ -6,23 +6,14 @@ HoloLens sends its roll/pitch/yaw packets to the UDPReceiver via UDP, which are 
 
 ## Primary Components
 
-`main.py` - Entry point. Parses the CLI for arguments, loads config, constructs and starts UDPReceiver and GimbalController, handles termination.  
-`udp_receiver.py` - Singleton class for `UDPReceiver`. Owns the listen socket; a background thread keeps only the newest head pose, timestamped with a monotonic clock.  
-`gimbal_controller.py` - Singleton class for `GimbalController`. Serves as an adapter between the UDPReceiver and the serial port for wireless transmission. Maps head pose to gimbal angles (invert, offset, deadbands, and limits), smooths and slew-limits, assembles packets and transmits them, and runs the pose-loss failsafe. Optionally parses telemetry.  
-`heq_protocol.py` - Protocol library and helper functions for the gimbal, including frame building, vendor-variant CRC32, the stream parser, and payload decoders.  
-`singleton.py` - Thread-safe `SingletonMeta` used by the `UDPReceiver` and `GimbalController` classes above.  
-`gimbal_config.json` - Production configuration settings.  
-`docs/` - Contains documentation as needed.
-
-## Ground Testing Tools
-
-Inside `programmatic_tests/`, you will find some test scripts for testing gimbal motion without HoloLens.
-
-* `hololens_fake_test.py` - Impersonates the HoloLens by sending dynamic head-like motion over UDP to the running bridge. Tests real production path without a headset. Run `python main.py --telemetry` from a terminal, then run this file from another terminal.
-* `move_gimbal_test.py` - Direct serial exercise of the protocol. Center, speed mode, and angle mode with live telemetry. Run this file directly in the terminal.
-* `read_gimbal_telemetry.py` - Reads the live telemetry from the gimbal. To save a log, use argument `--output file.log`. Run this file directly in the terminal.
-
-These 3 files read from `gimbal_config.json` with dynamic overrides available for `--port` as needed.
+[main.py](main.py) - Entry point. Parses the CLI for arguments, loads config, constructs and starts UDPReceiver and GimbalController, handles termination.  
+[udp_receiver.py](udp_receiver.py) - Singleton class for `UDPReceiver`. Owns the listen socket; a background thread keeps only the newest head pose, timestamped with a monotonic clock.  
+[gimbal_controller.py](gimbal_controller.py) - Singleton class for `GimbalController`. Serves as an adapter between the UDPReceiver and the serial port for wireless transmission. Maps head pose to gimbal angles (invert, offset, deadbands, and limits), smooths and slew-limits, assembles packets and transmits them, and runs the pose-loss failsafe. Optionally parses telemetry.  
+[heq_protocol.py](heq_protocol.py) - Protocol library and helper functions for the gimbal, including frame building, vendor-variant CRC32, the stream parser, and payload decoders.  
+[singleton.py](singleton.py) - Thread-safe `SingletonMeta` used by the `UDPReceiver` and `GimbalController` classes above.  
+[gimbal_config.json](gimbal_config.json) - Production configuration settings.  
+[motion_tests/](motion_tests/) - Sample scripts to test the gimbal's motion without HoloLens.  
+[tests/](tests/) - Unit tests for Python scripts, powered via `pytest`.
 
 ## Setup and Usage
 
@@ -55,7 +46,7 @@ _For your convenience, it's strongly recommended to study the protocol documenta
 
 1. Clone this repo to your machine.
 2. Create a venv in the root directory.
-3. Run `pip install -e .` inside the root directory.
+3. Run `pip install -e ".[dev]` inside the root directory.
 4. Plug in the USB to UART adapter (wired testing or wireless radio link) to your machine. Use Device Manager to locate which COM port matches with the UART adapter.
 5. Set the serial port in `gimbal_config.json`, such as `COM5`, `COM7`, etc.
 6. Run the teleoperation bridge using these commands:
@@ -82,3 +73,19 @@ These are default settings from prior usage; you can tweak them as needed to fit
 * `mapping` - Per-axis inversion and offset applied to head angles.
 * `smoothing` - Exponential smoothing `alpha`, per-tick slew limit `max_step_deg`, and `deadband_deg` around zero.
 * `failsafe` - Pose is considered lost after `signal_lost_after_s`; the gimbal then holds its pose until poses resume. Recentering only happens when the program terminates.
+
+## Testing
+
+### Gimbal Motion Testing Tools
+
+Inside [motion_tests/](motion_tests/), you will find some test scripts for testing gimbal motion without HoloLens.
+
+* [hololens_fake_test.py](hololens_fake_test.py) - Impersonates the HoloLens by sending dynamic head-like motion over UDP to the running bridge. Tests real production path without a headset. Run `python main.py --telemetry` from a terminal, then run this file from another terminal.
+* [move_gimbal_test.py](move_gimbal_test.py) - Direct serial exercise of the protocol. Center, speed mode, and angle mode with live telemetry. Run this file directly in the terminal.
+* [read_gimbal_telemetry.py](read_gimbal_telemetry.py) - Reads the live telemetry from the gimbal. To save a log, use argument `--output file.log`. Run this file directly in the terminal.
+
+These 3 files read from [gimbal_config.json](gimbal_config.json) with dynamic overrides available for `--port` as needed.
+
+### Software Testing Tools
+
+TODO
