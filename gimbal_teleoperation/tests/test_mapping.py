@@ -129,7 +129,7 @@ class TestSingletonBehavior:
         other_config["serial"]["port"] = "COM_OTHER"
         second = make_controller(other_config)
         assert second is first
-        assert second._serial_port == "COM_FAKE" # Should match the first instance's arg
+        assert second._serial_port == "COM_FAKE"  # Match first serial
 
     def test_reset_fixture_gives_each_test_a_fresh_instance(self):
         # If the autouse fixture in conftest.py failed to clear
