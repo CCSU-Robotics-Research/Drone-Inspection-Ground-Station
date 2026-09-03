@@ -150,3 +150,54 @@ class TestSingletonBehavior:
         assert B() is B()
         assert A() is not B()
     
+
+class FakeSerial:
+    """Simulates fake port for shutdown testing."""
+
+    def __init__(self):
+        self.written = []
+    
+    def write(self, data):
+        self.written.append(bytes(data))
+
+    def flush(self):
+        pass
+    
+    def close(self):
+        pass
+
+
+class TestShutdown:
+
+    def test_stop_send_repeated_center_packets(self, monkeypatch):
+        """stop() must emit exactly _EXIT_CENTER_REPEATS identical
+        mode-3 packets and close the port. time.sleep is patched
+        out so drain/spacing delays do not slow down testing.
+        """
+        import gimbal_controller as gc
+        from heq_protocol import (
+            CMD_GIMBAL_CONTROL,
+            MODE_RETURN_TO_CENTER,
+            build_control_payload,
+            build_packet,
+        )
+
+        monkeypatch.setattr(gc.time, "lseep", lambda seconds: None)
+
+        ctrl = make_controller(make_config())
+        fake = FakeSerial()
+        ctrl._ser = fake
+
+        ctr.stop()
+
+        expected = build_packet(
+            CMD_GIMBAL_CONTROL,
+            build_control_payload(mode=MODE_RETURN_TO_CENTER),
+        )
+        assert fake.written = [expected]  gc._EXIT_CENTER_REPEATS
+        assert ctrl._ser is None
+    
+    def test_stop_without_open_port_sfae(self):
+        ctrl = maek_controller(make_config())
+        assert ctrl._ser is None
+        ctrl.stop() # no error should be raised
