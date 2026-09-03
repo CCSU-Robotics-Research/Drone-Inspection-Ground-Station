@@ -112,36 +112,36 @@ class TestParser:
             frames += parser.feed(TELEMETRY_0X87[i:i + 1])
         assert len(frames) == 1
         assert frames[0].crc_ok
-    
+
     def test_frame_split(self):
         parser = HEQParser()
         assert parser.feed(TELEMETRY_0X87[:7]) == []
         frames = parser.feed(TELEMETRY_0X87[7:])
         assert len(frames) == 1 and frames[0].crc_ok
-    
+
     def test_junk_before_discarded_header(self):
         frames = HEQParser().feed(b"\x00\x55\x12" + TELEMETRY_0X87)
         assert len(frames) == 1 and frames[0].crc_ok
-    
+
     def test_two_frames_in_one_chunk(self):
         frames = HEQParser().feed(TELEMETRY_0X87 * 2)
         assert len(frames) == 2
         assert all(f.crc_ok for f in frames)
-    
+
     def test_corrupted_crc(self):
         bad = TELEMETRY_0X87[:-1] + bytes([TELEMETRY_0X87[-1] ^ 0xFF])
         frames = HEQParser().feed(bad)
         assert len(frames) == 1
         assert frames[0].header_ok
         assert not frames[0].crc_ok
-    
+
     def test_corrupted_checksum(self):
         bad = bytearray(TELEMETRY_0X87)
         bad[4] ^= 0xFF
         frames = HEQParser().feed(bytes(bad))
         assert len(frames) == 1
         assert not frames[0].header_ok
-    
+
     def test_junk_flood_buffer(self):
         parser = HEQParser()
         assert parser.feed(b"\x00" * 2000) == []
@@ -149,7 +149,7 @@ class TestParser:
         # Add a subsequent legit frame
         frames = parser.feed(TELEMETRY_0X87)
         assert len(frames) == 1 and frames[0].crc_ok
-    
+
     def test_empty_feed(self):
         assert HEQParser().feed(b"") == []
 
@@ -174,7 +174,7 @@ class TestDecoders:
     def test_decode_0x87_rejects_wrong_len(self):
         with pytest.raises(ValueError):
             decode_0x87_v2(b"\x00" * 12)
-    
+
     def test_decode_0x14_fields(self):
         data = bytearray(15)
         data[11] = 50    # dead zone
@@ -184,7 +184,7 @@ class TestDecoders:
         assert result["dead_zone_range"] == 50
         assert result["follow_speed"] == 10
         assert result["inversion"] == -1
-    
+
     def test_decode_0x14_rejects_wrong_len(self):
         with pytest.raises(ValueError):
             decode_0x14(b"\x00" * 14)

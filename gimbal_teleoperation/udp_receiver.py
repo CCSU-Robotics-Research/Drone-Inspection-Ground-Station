@@ -53,7 +53,7 @@ class UDPReceiver(metaclass=SingletonMeta):
 
     def start(self) -> None:
         """Bind the socket and start the receive thread.
-        
+
         Binding happens here so that a port conflict fails
         loudly at startup instead of dying silently in the background.
         """
@@ -83,7 +83,7 @@ class UDPReceiver(metaclass=SingletonMeta):
         if self._sock is not None:
             self._sock.close()
             self._sock = None
-    
+
     def get_latest_pose(self) -> Tuple[Optional[HeadPose], float]:
         """Return ``(pose, monotonic_time_received)``.
 
@@ -91,7 +91,7 @@ class UDPReceiver(metaclass=SingletonMeta):
         """
         with self._lock:
             return self._latest_pose, self._latest_time
-    
+
     @staticmethod
     def _parse_pose(message: str) -> HeadPose:
         """Parse ``"roll,pitch,yaw[,...]"`` into a :class:`HeadPose`."""
@@ -100,13 +100,13 @@ class UDPReceiver(metaclass=SingletonMeta):
             raise ValueError(
                 f'expected "roll,pitch,yaw" but got {message!r}'
             )
-        
+
         return HeadPose(
             roll=float(parts[0]),
             pitch=float(parts[1]),
             yaw=float(parts[2]),
         )
-    
+
     def _receive_loop(self) -> None:
         """Replace the latest pose as datagrams arrive."""
         while not self._stop_event.is_set():
@@ -117,14 +117,14 @@ class UDPReceiver(metaclass=SingletonMeta):
             except OSError:
                 # Socket closed during shutdown.
                 break
-            
+
             try:
                 message = data.decode("utf-8", errors="replace")
                 pose = self._parse_pose(message)
             except ValueError as exc:
                 _LOG.warning("Bad pose packet: %s", exc)
                 continue
-            
+
             with self._lock:
                 self._latest_pose = pose
                 self._latest_time = time.monotonic()

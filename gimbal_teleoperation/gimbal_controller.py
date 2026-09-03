@@ -1,4 +1,4 @@
-"""Gimbal teleoperation controller. 
+"""Gimbal teleoperation controller.
 
 Owns the serial port and everything that happens to it. The
 fixed-rate control loop lives here.
@@ -170,9 +170,9 @@ class GimbalController(metaclass=SingletonMeta):
         if self._telemetry_thread is not None:
             self._telemetry_thread.join(timeout=2.0)
             self._telemetry_thread = None
-        
+
         self._send_return_to_center()
-        
+
         if self._ser is not None:
             self._ser.close()
             self._ser = None
@@ -184,14 +184,14 @@ class GimbalController(metaclass=SingletonMeta):
             self._control_thread is not None
             and self._control_thread.is_alive()
         )
-    
+
     def get_latest_telemetry(self) -> Optional[dict]:
         """Return the newest decoded 0x87 attitude, ``None`` if failed
         or if telemetry is disabled.
         """
         with self._telemetry_lock:
             return self._latest_telemetry
-    
+
     def _open_serial(self) -> None:
         """Opens the serial connection, throws an exception if failed."""
         try:
@@ -211,7 +211,7 @@ class GimbalController(metaclass=SingletonMeta):
                 f"Could not open {self._serial_port!r} "
                 f"Valid COM ports available: {found}: {exc}"
             ) from exc
-        
+
         _LOG.info(
             "Opened %s @ %d baud", self._serial_port, self._serial_baud
         )
@@ -233,9 +233,9 @@ class GimbalController(metaclass=SingletonMeta):
             value = _apply_deadband(value, self._deadband)
             lo, hi = self._limits[axis]
             out[axis] = _clamp(value, lo, hi)
-        
+
         return out["roll"], out["pitch"], out["yaw"]
-    
+
     def _send_angle(self, roll: float, pitch: float, yaw: float) -> None:
         """Writes a packet to the configured COM port to teleoperate
         the gimbal.
@@ -270,7 +270,7 @@ class GimbalController(metaclass=SingletonMeta):
                 time.sleep(0.2)
         except serial.SerialException as exc:
             _LOG.error("Center-on-exit failed: %s", exc)
-    
+
     def _control_loop(self) -> None:
         """Fixed-rate teleoperation loop: reads a head pose, maps,
         smooths, and sends.
@@ -297,11 +297,11 @@ class GimbalController(metaclass=SingletonMeta):
                 new_state = ControlState.LIVE
                 target = self._map_head_to_gimbal(pose)
                 max_step = self._max_step
-            
+
             if new_state is not state:
                 _LOG.info("Control state: %s", new_state.value)
                 state = new_state
-        
+
             smoothed_roll = _smooth(self._roll, target[0], self._alpha)
             smoothed_pitch = _smooth(self._pitch, target[1], self._alpha)
             smoothed_yaw = _smooth(self._yaw, target[2], self._alpha)
@@ -324,7 +324,7 @@ class GimbalController(metaclass=SingletonMeta):
                 )
                 self._stop_event.set()
                 break
-            
+
             if now - last_status_log > _STATUS_LOG_PERIOD_S:
                 _LOG.debug(
                     "%s | cmd r/p/y = %.2f, %.2f, %.2f",
@@ -342,7 +342,7 @@ class GimbalController(metaclass=SingletonMeta):
             else:
                 # Resynchronize time.
                 next_tick = time.monotonic()
-        
+
     def _telemetry_loop(self) -> None:
         """Parse 0x87 attitude pushes and cache the newest one."""
         last_log = 0.0

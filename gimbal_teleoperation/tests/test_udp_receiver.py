@@ -32,26 +32,26 @@ def wait_for_pose(receiver, timeout_s=2.0):
 
 
 class TestParsePose:
-    
+
     def test_valid_message(self):
         pose = UDPReceiver._parse_pose("1.5,-2.25,30")
         assert pose == HeadPose(roll=1.5, pitch=-2.25, yaw=30.0)
-    
+
     def test_extra_fields_ignored(self):
         pose = UDPReceiver._parse_pose("1,2,3,42,1234.5")
         assert pose == HeadPose(roll=1.0, pitch=2.0, yaw=3.0)
-    
+
     def test_too_few_fields_raises(self):
         with pytest.raises(ValueError):
             UDPReceiver._parse_pose("1,2")
-    
+
     def test_non_numeric_raises(self):
         with pytest.raises(ValueError):
             UDPReceiver._parse_pose("a,b,c")
 
 
 class TestReceiverSocket:
-    
+
     def test_no_pose_before_first_datagram(self, running_receiver):
         receiver, _, _ = running_receiver
         pose, stamp = receiver.get_latest_pose()
@@ -64,7 +64,7 @@ class TestReceiverSocket:
         pose, stamp = wait_for_pose(receiver)
         assert pose == HeadPose(roll=10.5, pitch=-20.25, yaw=30.0)
         assert time.monotonic() - stamp < 2.0
-    
+
     def test_keeps_only_newest_pose(self, running_receiver):
         receiver, sender, port = running_receiver
         sender.sendto(b"1,1,1", ("127.0.0.1", port))
@@ -91,7 +91,7 @@ class TestReceiverSocket:
         pose, stamp = receiver.get_latest_pose()
         assert pose == good
         assert stamp == good_stamp
-    
+
     def test_stop_ok_repeat_safe(self, running_receiver):
         receiver, _, _ = running_receiver
         receiver.stop()

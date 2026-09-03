@@ -86,19 +86,19 @@ def main() -> None:
         config["serial"]["port"] = args.serial_port
     if args.udp_port:
         config["udp"]["listen_port"] = args.udp_port
-    
+
     stop_event = threading.Event()
 
     def request_stop(signum, frame):
         _LOG.info("Shutdown requested")
         stop_event.set()
-    
+
     signal.signal(signal.SIGINT, request_stop)
     try:
         signal.signal(signal.SIGTERM, request_stop)
     except (AttributeError, ValueError):
         pass
-    
+
     receiver = UDPReceiver(config["udp"])
     controller = GimbalController(
         config, receiver, telemetry_enabled=args.telemetry

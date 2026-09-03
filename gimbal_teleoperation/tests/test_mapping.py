@@ -57,7 +57,7 @@ class TestMapping:
         ctrl = make_controller(make_config())
         pose = HeadPose(roll=10.0, pitch=-20.0, yaw=50.0)
         assert ctrl._map_head_to_gimbal(pose) == (10.0, -20.0, 50.0)
-    
+
     def test_inversion_flips_only_flagged_axes(self):
         config = make_config()
         config["mapping"]["invert_roll"] = True
@@ -65,7 +65,7 @@ class TestMapping:
         ctrl = make_controller(config)
         pose = HeadPose(roll=10.0, pitch=-20.0, yaw=50.0)
         assert ctrl._map_head_to_gimbal(pose) == (-10.0, -20.0, -50.0)
-    
+
     def test_offset_applied_after_inversion(self):
         config = make_config()
         config["mapping"]["invert_roll"] = True
@@ -74,7 +74,7 @@ class TestMapping:
         pose = HeadPose(roll=10.0, pitch=0.0, yaw=0.0)
         roll, _, _ = ctrl._map_head_to_gimbal(pose)
         assert roll == pytest.approx(-5.0) # (-10) + 5
-    
+
     def test_ddaeadband_zeroes_small_values(self):
         ctrl = make_controller(make_config())
         pose = HeadPose(roll=0.2, pitch=-0.24, yaw=0.249)
@@ -89,7 +89,7 @@ class TestMapping:
         pose = HeadPose(roll=0.0, pitch=0.0, yaw=1.0)
         _, _, yaw = ctrl._map_head_to_gimbal(pose)
         assert yaw == 0.0
-    
+
     def test_limits_clamp_both_directions(self):
         ctrl = make_controller(make_config())
         pose = HeadPose(roll=999.0, pitch=-999.0, yaw=-999.0)
@@ -110,16 +110,16 @@ class TestHelpers:
     )
     def test_apply_deadband(self, x, expected):
         assert _apply_deadband(x, 0.25) == expected
-    
+
     def test_smooth_moves_fraction_toward_target(self):
         assert _smooth(0.0, 10.0, 0.85) == pytest.approx(8.5)
         assert _smooth(10.0, 10.0, 0.85) == pytest.approx(10.0)
-    
+
     def test_limit_step_caps_movement(self):
         assert _limit_step(0.0, 100.0, 12.0) == 12.0
         assert _limit_step(0.0, -100.0, 12.0) == -12.0
         assert _limit_step(0.0, 5.0, 12.0) == 5.0
-    
+
 
 class TestSingletonBehavior:
 
@@ -138,31 +138,31 @@ class TestSingletonBehavior:
         config["serial"]["port"] = "COM_NEW"
         ctrl = make_controller(config)
         assert ctrl._serial_port == "COM_NEW"
-    
+
     def test_distinct_classes_get_distinct_instances(self):
         class A(metaclass=SingletonMeta):
             pass
-        
+
         class B(metaclass=SingletonMeta):
             pass
-        
+
         assert A() is A()
         assert B() is B()
         assert A() is not B()
-    
+
 
 class FakeSerial:
     """Simulates fake port for shutdown testing."""
 
     def __init__(self):
         self.written = []
-    
+
     def write(self, data):
         self.written.append(bytes(data))
 
     def flush(self):
         pass
-    
+
     def close(self):
         pass
 
@@ -196,7 +196,7 @@ class TestShutdown:
         )
         assert fake.written == [expected] * 3
         assert ctrl._ser is None
-    
+
     def test_stop_without_open_port_safe(self):
         ctrl = make_controller(make_config())
         assert ctrl._ser is None

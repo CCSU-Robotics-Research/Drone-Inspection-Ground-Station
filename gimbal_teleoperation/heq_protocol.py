@@ -167,7 +167,7 @@ def build_packet(command: int, data: bytes = b"") -> bytes:
         [FRAME_HEADER, PROTOCOL_VERSION, length, command, header_checksum]
     )
     pkt += data
-    
+
     if length > 0:
         pkt += struct.pack("<I", calc_crc32(data))
 
@@ -186,7 +186,7 @@ class HEQParser:
 
     def __init__(self) -> None:
         self.buffer = bytearray()
-    
+
     def feed(self, chunk: bytes) -> "list[HEQFrame]":
         """Consume ``chunk`` and return all frames completed by it."""
         self.buffer.extend(chunk)
@@ -200,13 +200,13 @@ class HEQParser:
                 if len(self.buffer) > 1024:
                     self.buffer = self.buffer[-16:]
                 break
-            
+
             if start > 0:
                 del self.buffer[:start]
-            
+
             if len(self.buffer) < 5:
                 break
-            
+
             version = self.buffer[1]
             length = self.buffer[2]
             command = self.buffer[3]
@@ -215,7 +215,7 @@ class HEQParser:
             total_len = 5 + length + (4 if length > 0 else 0)
             if len(self.buffer) < total_len:
                 break
-            
+
             raw = bytes(self.buffer[:total_len])
             data = raw[5:5 + length]
 
@@ -229,7 +229,7 @@ class HEQParser:
                 crc_bytes = raw[5 + length:5 + length + 4]
                 crc_value = struct.unpack("<I", crc_bytes)[0]
                 crc_ok = crc_value == calc_crc32(data)
-            
+
             frames.append(
                 HEQFrame(
                     version=version,
@@ -245,7 +245,7 @@ class HEQParser:
             )
 
             del self.buffer[:total_len]
-        
+
         return frames
 
 
@@ -275,7 +275,7 @@ def decode_0x87_v2(data: bytes) -> dict:
         raise ValueError(
             f"0x87 payload must be 24 bytes, got {len(data)}"
         )
-    
+
     vals = struct.unpack("<12h", data)
     names = [
         "imu_roll",
