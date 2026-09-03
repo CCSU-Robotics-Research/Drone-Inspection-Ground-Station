@@ -9,6 +9,9 @@ description = "HoloLens to HEQ G-PORT Gimbal Teleoperation Bridge"
 requires-python = ">=3.9"
 dependencies = ["pyserial>=3.5"]
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "pycodestyle>=2.11"]
+
 [tool.setuptools]
 py-modules = [
     "heq_protocol",
@@ -16,3 +19,6 @@ py-modules = [
     "gimbal_controller",
     "singleton",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
