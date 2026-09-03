@@ -88,4 +88,14 @@ These 3 files read from [gimbal_config.json](gimbal_config.json) with dynamic ov
 
 ### Software Testing Tools
 
-TODO
+Automated unit tests live in [tests/](tests/) and cover the gimbal's protcol, the HoloLens-to-gimbal mapping math, the shutdown and failsafe behavior, and the UDP receiver.
+
+To run tests locally:
+```bash
+pycodestyle --exclude=.venv,venv,__pycache__,.pytest_cache .
+pytest
+```
+
+Proper result is no output from pycodestyle (to verify formatting) and all tests passing.  
+
+Note that every push and pull request touching this subdirectory triggers [gimbal-ci.yml](../.github/workflows/gimbal-ci.yml) for GitHub Actions (CI). GitHub Actions will also run automated tests and format checks.
