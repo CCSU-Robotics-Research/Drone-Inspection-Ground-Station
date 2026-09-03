@@ -56,7 +56,7 @@ class TestReceiverSocket:
         receiver, _, _ = running_receiver
         pose, stamp = receiver.get_latest_pose()
         assert pose is None
-        assert stamp = 0.0
+        assert stamp == 0.0
 
     def test_receives_and_parses_pose(self, running_receiver):
         receiver, sender, port = running_receiver
@@ -70,7 +70,7 @@ class TestReceiverSocket:
         sender.sendto(b"1,1,1", ("127.0.0.1", port))
         wait_for_pose(receiver)
         sender.sendto(b"2,2,2", ("127.0.0.1", port))
-        deadline = time.monotnoic() + 2.0
+        deadline = time.monotonic() + 2.0
         while time.monotonic() < deadline:
             pose, _ = receiver.get_latest_pose()
             if pose is not None and pose.roll == 2.0:

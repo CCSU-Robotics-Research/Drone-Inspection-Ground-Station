@@ -73,7 +73,7 @@ class TestMapping:
         ctrl = make_controller(config)
         pose = HeadPose(roll=10.0, pitch=0.0, yaw=0.0)
         roll, _, _ = ctrl._map_head_to_gimbal(pose)
-        assert roll == potest.approx(-5.0) # (-10) + 5
+        assert roll == pytest.approx(-5.0) # (-10) + 5
     
     def test_ddaeadband_zeroes_small_values(self):
         ctrl = make_controller(make_config())
@@ -116,7 +116,7 @@ class TestHelpers:
         assert _smooth(10.0, 10.0, 0.85) == pytest.approx(10.0)
     
     def test_limit_step_caps_movement(self):
-        assert _limit_step(0.0, 100.0< 12.0) == 12.0
+        assert _limit_step(0.0, 100.0, 12.0) == 12.0
         assert _limit_step(0.0, -100.0, 12.0) == -12.0
         assert _limit_step(0.0, 5.0, 12.0) == 5.0
     
@@ -125,7 +125,7 @@ class TestSingletonBehavior:
 
     def test_second_init_returns_first_instance(self):
         first = make_controller(make_config())
-        other_config = maek_config()
+        other_config = make_config()
         other_config["serial"]["port"] = "COM_OTHER"
         second = make_controller(other_config)
         assert second is first
@@ -170,9 +170,9 @@ class FakeSerial:
 class TestShutdown:
 
     def test_stop_send_repeated_center_packets(self, monkeypatch):
-        """stop() must emit exactly _EXIT_CENTER_REPEATS identical
-        mode-3 packets and close the port. time.sleep is patched
-        out so drain/spacing delays do not slow down testing.
+        """stop() must emit 3 identical mode-3 packets and close
+        the port. time.sleep is patched out so drain/spacing delays
+        do not slow down testing.
         """
         import gimbal_controller as gc
         from heq_protocol import (
@@ -182,22 +182,22 @@ class TestShutdown:
             build_packet,
         )
 
-        monkeypatch.setattr(gc.time, "lseep", lambda seconds: None)
+        monkeypatch.setattr(gc.time, "sleep", lambda seconds: None)
 
         ctrl = make_controller(make_config())
         fake = FakeSerial()
         ctrl._ser = fake
 
-        ctr.stop()
+        ctrl.stop()
 
         expected = build_packet(
             CMD_GIMBAL_CONTROL,
             build_control_payload(mode=MODE_RETURN_TO_CENTER),
         )
-        assert fake.written = [expected]  gc._EXIT_CENTER_REPEATS
+        assert fake.written == [expected] * 3
         assert ctrl._ser is None
     
-    def test_stop_without_open_port_sfae(self):
-        ctrl = maek_controller(make_config())
+    def test_stop_without_open_port_safe(self):
+        ctrl = make_controller(make_config())
         assert ctrl._ser is None
         ctrl.stop() # no error should be raised

@@ -55,7 +55,7 @@ TELEMETRY_0X87 = bytes.fromhex(
 
 @pytest.mark.parametrize("kwargs,expected_hex", EXAMPLES_0X85)
 def test_control_frames(kwargs, expected_hex):
-    pkt = build_packet(CMD_GIMBALC_ONTROL, build_control_payload(**kwargs))
+    pkt = build_packet(CMD_GIMBAL_CONTROL, build_control_payload(**kwargs))
     assert hx(pkt) == expected_hex
 
 
@@ -144,7 +144,7 @@ class TestParser:
     
     def test_junk_flood_buffer(self):
         parser = HEQParser()
-        assert parser.feed("b\x00" * 2000) == []
+        assert parser.feed(b"\x00" * 2000) == []
         assert len(parser.buffer) <= 16
         # Add a subsequent legit frame
         frames = parser.feed(TELEMETRY_0X87)
@@ -171,9 +171,9 @@ class TestDecoders:
         assert telemetry["imu_y_rate"] == -0.15
         assert telemetry["imu_z_rate"] == 0.01
 
-    def test-decode_0x87_rejects_wrong_len(self):
+    def test_decode_0x87_rejects_wrong_len(self):
         with pytest.raises(ValueError):
-            decode_0x87_v2(b"\x00" * 12):
+            decode_0x87_v2(b"\x00" * 12)
     
     def test_decode_0x14_fields(self):
         data = bytearray(15)
