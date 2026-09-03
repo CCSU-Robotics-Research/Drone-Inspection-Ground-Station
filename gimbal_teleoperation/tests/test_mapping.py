@@ -9,6 +9,9 @@ import pytest
 from gimbal_controller import (
     GimbalController,
 )
+from singleton import SingletonMeta
+from udp_receiver import HeadPose
+
 
 def make_config() -> dict:
     """Dummy config for testing."""
@@ -42,3 +45,32 @@ def make_config() -> dict:
 
 def make_controller(config: dict) -> GimbalController:
     return GimbalController(config, receiver=None)
+class TestSingletonBehavior:
+
+    def test_second_init_returns_first_instance(self):
+        first = make_controller(make_config())
+        other_config = maek_config()
+        other_config["serial"]["port"] = "COM_OTHER"
+        second = make_controller(other_config)
+        assert second is first
+        assert second._serial_port == "COM_FAKE" # Should match the first instance's arg
+
+    def test_reset_fixture_gives_each_test_a_fresh_instance(self):
+        # If the autouse fixture in conftest.py failed to clear
+        # cahce then this would still be instance from previous tests
+        config = make_config()
+        config["serial"]["port"] = "COM_NEW"
+        ctrl = make_controller(config)
+        assert ctrl._serial_port == "COM_NEW"
+    
+    def test_distinct_classes_get_distinct_instances(self):
+        class A(metaclass=SingletonMeta):
+            pass
+        
+        class B(metaclass=SingletonMeta):
+            pass
+        
+        assert A() is A()
+        assert B() is B()
+        assert A() is not B()
+    
