@@ -8,7 +8,7 @@
         "baud": 115200
     },
     "control": {
-        "update_hz": 60
+        "update_hz": 10
     },
     "limits": {
         "roll": [-45.0, 45.0],
@@ -24,8 +24,8 @@
         "yaw_offset": 0.0
     },
     "smoothing": {
-        "alpha": 0.85,
-        "max_step_deg": 12.0,
+        "alpha": 0.9,
+        "max_step_deg": 24.0,
         "deadband_deg": 0.25
     },
     "failsafe": {
