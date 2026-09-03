@@ -8,6 +8,10 @@ import pytest
 
 from gimbal_controller import (
     GimbalController,
+    _apply_deadband,
+    _clamp,
+    _limit_step,
+    _smooth,
 )
 from singleton import SingletonMeta
 from udp_receiver import HeadPose
@@ -45,6 +49,32 @@ def make_config() -> dict:
 
 def make_controller(config: dict) -> GimbalController:
     return GimbalController(config, receiver=None)
+
+class TestHelpers:
+
+    @pytest.mark.parametrize(
+        "x,lo,hi,expected",
+        [(5, 0, 10, 5), (-1, 0, 10, 0), (11, 0, 10, 10)],
+    )
+    def test_clamp(self, x, lo, hi, expected):
+        assert _clamp(x, lo, hi) == expected
+
+    @pytest.mark.parametrize(
+        "x,expected", [(0.1, 0.0), (-0.24, 0.0), (0.25, 0.25), (1.0, 1.0)]
+    )
+    def test_apply_deadband(self, x, expected):
+        assert _apply_deadband(x, 0.25) == expected
+    
+    def test_smooth_moves_fraction_toward_target(self):
+        assert _smooth(0.0, 10.0, 0.85) == pytest.approx(8.5)
+        assert _smooth(10.0, 10.0, 0.85) == pytest.approx(10.0)
+    
+    def test_limit_step_caps_movement(self):
+        assert _limit_step(0.0, 100.0< 12.0) == 12.0
+        assert _limit_step(0.0, -100.0, 12.0) == -12.0
+        assert _limit_step(0.0, 5.0, 12.0) == 5.0
+    
+
 class TestSingletonBehavior:
 
     def test_second_init_returns_first_instance(self):
