@@ -24,6 +24,7 @@ _LOG = logging.getLogger(__name__)
 _SOCKET_TIMEOUT_S = 0.25
 _MAX_DATAGRAM_BYTES = 1024
 
+
 @dataclass(frozen=True)
 class HeadPose:
     """One head orientation from HoloLens in degrees."""

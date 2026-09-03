@@ -73,7 +73,7 @@ class TestMapping:
         ctrl = make_controller(config)
         pose = HeadPose(roll=10.0, pitch=0.0, yaw=0.0)
         roll, _, _ = ctrl._map_head_to_gimbal(pose)
-        assert roll == pytest.approx(-5.0) # (-10) + 5
+        assert roll == pytest.approx(-5.0)  # (-10) + 5
 
     def test_ddaeadband_zeroes_small_values(self):
         ctrl = make_controller(make_config())
@@ -200,4 +200,4 @@ class TestShutdown:
     def test_stop_without_open_port_safe(self):
         ctrl = make_controller(make_config())
         assert ctrl._ser is None
-        ctrl.stop() # no error should be raised
+        ctrl.stop()  # no error should be raised

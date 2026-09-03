@@ -22,6 +22,7 @@ from heq_protocol import (
 def hx(b: bytes) -> str:
     return b.hex(" ").upper()
 
+
 # Downlink example
 EXAMPLES_0X85 = [
     (
@@ -152,6 +153,7 @@ class TestParser:
 
     def test_empty_feed(self):
         assert HEQParser().feed(b"") == []
+
 
 class TestDecoders:
 

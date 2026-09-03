@@ -95,4 +95,4 @@ class TestReceiverSocket:
     def test_stop_ok_repeat_safe(self, running_receiver):
         receiver, _, _ = running_receiver
         receiver.stop()
-        receiver.stop() # shouldn't raise errors
+        receiver.stop()  # shouldn't raise errors
