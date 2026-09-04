@@ -9,7 +9,7 @@ This repository houses all of the components for the ground station of the drone
 
 ## Repository Map
 
-[gimbal_teleoperation/](gimbal_teleoperation/) - Contains all code for wireless teleoperation of the Gimbal
+[gimbal_teleoperation/](gimbal_teleoperation/) - Contains all code for wireless teleoperation of the Gimbal  
 [computer_vision/](computer_vision/) - **TODO: Conducting live AI analysis with AI models on the video feed streamed from the camera, to be forwarded to the HoloLens.**
 
 ## Setup
