@@ -17,8 +17,6 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-from singleton import SingletonMeta
-
 _LOG = logging.getLogger(__name__)
 
 _SOCKET_TIMEOUT_S = 0.25
@@ -34,11 +32,8 @@ class HeadPose:
     yaw: float
 
 
-class UDPReceiver(metaclass=SingletonMeta):
-    """Handles the listener socket when receiving HoloLens rpy.
-
-    Singleton since there should never be multiple instances.
-    """
+class UDPReceiver():
+    """Handles the listener socket when receiving HoloLens rpy."""
 
     def __init__(self, udp_config: dict) -> None:
         self._listen_ip = udp_config["listen_ip"]

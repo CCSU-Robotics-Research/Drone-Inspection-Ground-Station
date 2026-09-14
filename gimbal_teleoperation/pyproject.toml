@@ -17,7 +17,6 @@ py-modules = [
     "heq_protocol",
     "udp_receiver",
     "gimbal_controller",
-    "singleton",
 ]
 
 [tool.pytest.ini_options]

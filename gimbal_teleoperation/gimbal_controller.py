@@ -44,7 +44,6 @@ from heq_protocol import (
     build_packet,
     decode_0x87_v2,
 )
-from singleton import SingletonMeta
 from udp_receiver import HeadPose, UDPReceiver
 
 _LOG = logging.getLogger(__name__)
@@ -78,7 +77,7 @@ def _limit_step(prev: float, target: float, max_step: float) -> float:
     return prev + delta
 
 
-class GimbalController(metaclass=SingletonMeta):
+class GimbalController():
     """Handles the serial link and control loop."""
 
     def __init__(
