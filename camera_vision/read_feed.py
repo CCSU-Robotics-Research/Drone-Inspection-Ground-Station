@@ -8,7 +8,7 @@ path to a video file.
 
 import logging
 import time
-from colllections import deque
+from collections import deque
 from typing import Optional, Union
 
 import cv2
@@ -30,13 +30,13 @@ class FpsCounter:
             now = time.monotonic()
         self._stamps.append(now)
 
-        cutoff = now - self._window_s
+        cutoff = now - self._window_s_
         while self._stamps and self._stamps[0] < cutoff:
             self._stamps.popleft()
 
         if len(self._stamps) < 2:
             return 0.0
-        span = self._stamp[-1] - self._stamps[0]
+        span = self._stamps[-1] - self._stamps[0]
         if span <= 0:
             return 0.0
         return (len(self._stamps) - 1) / span
@@ -94,3 +94,9 @@ class CameraSource:
 
         ok, frame = self._cap.read()
         return None if not ok else frame
+
+    def close(self) -> None:
+        """Release the device."""
+        if self._cap is not None:
+            self._cap.release()
+            self._cap = None
