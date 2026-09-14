@@ -67,6 +67,17 @@ def run(device) -> None:
                 continue
             misses = 0
 
+            fps = fps_counter.tick()
+            cv2.putText(
+                frame,
+                f"{fps:.1f} FPS",
+                (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (0, 255, 0),
+                2,
+            )
+
             cv2.imshow("Camera Vision", frame)
             key = cv2.waitKey(1) & 0xFF
             if key in (ord("q"), 27):
