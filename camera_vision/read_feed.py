@@ -21,7 +21,7 @@ class FpsCounter:
     """Measures achieved FPS over a sliding window."""
 
     def __init__(self, window_s: float = 1.0) -> None:
-        self._window_s_ = window_s
+        self._window_s = window_s
         self._stamps: deque = deque()
 
     def tick(self, now: Optional[float] = None) -> float:
@@ -30,7 +30,7 @@ class FpsCounter:
             now = time.monotonic()
         self._stamps.append(now)
 
-        cutoff = now - self._window_s_
+        cutoff = now - self._window_s
         while self._stamps and self._stamps[0] < cutoff:
             self._stamps.popleft()
 
@@ -73,8 +73,7 @@ class CameraSource:
             self._cap = None
             raise RuntimeError(
                 f"could not open camera {self._device!r}. Check the "
-                f"connection, try another index with --device, or run "
-                f"--probe to list working indices."
+                f"connection, try another index with --device."
             )
 
         _LOG.info(

@@ -1,7 +1,6 @@
 """Unit tests for the camera feed reader."""
 
 import cv2
-import os
 import numpy as np
 import pytest
 
@@ -14,7 +13,6 @@ _FRAMES = 12
 
 @pytest.fixture
 def sample_video(tmp_path):
-    # Setup
     """Write a small MJPG .avi and return its path as a string."""
     path = str(tmp_path / "sample.avi")
     writer = cv2.VideoWriter(
@@ -27,12 +25,8 @@ def sample_video(tmp_path):
         frame = np.full((_HEIGHT, _WIDTH, 3), i * 20, dtype=np.uint8)
         writer.write(frame)
     writer.release()
+    return path
 
-    yield path
-
-    # Teardown
-    if os.path.exists(path):
-        os.remove(path)
 
 class TestFpsCounter:
 

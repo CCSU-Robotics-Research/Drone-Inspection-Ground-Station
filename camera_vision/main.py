@@ -8,7 +8,6 @@ Usage::
     python main.py                    # open device 0
     python main.py --device 2         # another camera index
     python main.py --device clip.mp4  # play a recording instead
-    python main.py --probe            # list camera indices that open
     python main.py -v                 # debug logging
 
 Press q or Esc in the video window to quit. You may have to change
