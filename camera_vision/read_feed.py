@@ -55,15 +55,21 @@ class CameraSource:
 
     @property
     def width(self) -> int:
-        return self._cap and int(self._cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 0.0
+        if self._cap is None:
+            return 0
+        return int(self._cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
     @property
     def height(self) -> int:
-        return self._cap and int(self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 0.0
+        if self._cap is None:
+            return 0
+        return int(self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     @property
     def fps(self) -> float:
-        return self._cap and float(self._cap.get(cv2.CAP_PROP_FPS)) or 0.0
+        if self._cap is None:
+            return 0.0
+        return float(self._cap.get(cv2.CAP_PROP_FPS))
 
     def open(self) -> None:
         """Opens the device."""
