@@ -30,7 +30,7 @@ def sample_video(tmp_path):
 
 class TestFpsCounter:
 
-    def test_stead_rate_is_measured(self):
+    def test_steady_rate_is_measured(self):
         counter = FpsCounter(window_s=1.0)
         fps = 0.0
         for i in range(11):
