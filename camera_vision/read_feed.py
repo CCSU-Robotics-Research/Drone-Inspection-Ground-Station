@@ -1,7 +1,7 @@
 """Reads a camera feed from a source.
 
 ``CameraSource`` reads from the specified capture device
-and wraps ``cv2.VideeoCapture``. ``device`` is either an
+and wraps ``cv2.VideoCapture``. ``device`` is either an
 index to the specified webcam or capture card, or a string
 path to a video file.
 """

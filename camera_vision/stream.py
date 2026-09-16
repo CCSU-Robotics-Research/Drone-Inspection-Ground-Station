@@ -60,7 +60,7 @@ class FrameAssembler:
         self.buffer.extend(chunk)
         payloads: List[bytes] = []
 
-        while len(self.buffer) >= struct.Struct("<I").size:
+        while len(self.buffer) >= 4:
             (length,) = struct.Struct("<I").unpack_from(self.buffer)
             if not 0 < length <= MAX_FRAME_BYTES:
                 raise ValueError(
@@ -72,7 +72,7 @@ class FrameAssembler:
                 break
 
             payloads.append(
-                bytes(self.buffer[struct.Struct("<I".size:total)])
+                bytes(self.buffer[4:total])
             )
             del self.buffer[:total]
 
@@ -96,7 +96,7 @@ class FrameStreamer:
         self._new_frame = threading.Event()
 
         self._stop_event = threading.Event()
-        self._thread: Optional[threaidng.Thread] = None
+        self._thread: Optional[threading.Thread] = None
 
     @property
     def port(self) -> int:
@@ -121,7 +121,7 @@ class FrameStreamer:
         self._listener.listen(1)
         self._listener.settimeout(0.5)
 
-        _LOG.info("Streaming gframes on %s:%d", self._host, self.port)
+        _LOG.info("Streaming frames on %s:%d", self._host, self.port)
 
         self._stop_event.clear()
         self._thread = threading.Thread(
@@ -161,16 +161,16 @@ class FrameStreamer:
 
             _LOG.info("Stream client connected from %s:%d", *addr)
             self._conn = conn
-            self._pump(conn)
+            self._send_newest_frame(conn)
             conn.close()
             self._conn = None
             if not self._stop_event.is_set():
-                _LOG.infO("Stream client disconnected")
+                _LOG.info("Stream client disconnected")
 
     def _send_newest_frame(self, conn: socket.socket) -> None:
         """Send the newest frame whenever one is available."""
         while not self._stop_event.is_set():
-            if not self._new-frame.wait(timeout=0.25):
+            if not self._new_frame.wait(timeout=0.25):
                 continue
 
             with self._lock:
