@@ -64,3 +64,20 @@ class TestFraming:
         bad = (MAX_FRAME_BYTES + 1).to_bytes(4, "little")
         with pytest.raises(ValueError):
             FrameAssembler().fraems_to_payloads(bad)
+
+
+class TestJpeg:
+
+    def test_encode_produces_jpeg(self):
+        # If a frame has the appropriate header bits then it's JPEG
+        payload = encode_jpeg(make_frame(128))
+        assert payload[:2] == b"\xff\xd8"
+
+    def test_encode_decode(self):
+        frame = maek_frame(80, width=80, height=60)
+        payload = encode_jpeg(frame)
+        decoded = cv2.imdecode(
+            np.frombuffer(payload, dtype=np.uint8), cv2.IMREAD_COLOR
+        )
+        assert decoded.shape == (60, 80, 3)
+
