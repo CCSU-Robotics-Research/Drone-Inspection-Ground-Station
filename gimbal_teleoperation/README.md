@@ -1,52 +1,44 @@
-# Gimbal Teleoperation with HoloLens
+# Gimbal Teleoperation
 
 This subdirectory handles communication from the HoloLens to the station computer via UDP and ultimately to the HEQ G-Port gimbal via UART serial.
 
 HoloLens sends its roll/pitch/yaw packets to the UDPReceiver via UDP, which are parsed into HeadPoses and forwarded to the GimbalController. These orientations are assembled into UART frames to communicate with the gimbal wirelessly.
 
-## Primary Components
+## Components
 
-[main.py](main.py) - Entry point. Parses the CLI for arguments, loads config, constructs and starts UDPReceiver and GimbalController, handles termination.  
-[udp_receiver.py](udp_receiver.py) - Singleton class for `UDPReceiver`. Owns the listen socket; a background thread keeps only the newest head pose, timestamped with a monotonic clock.  
-[gimbal_controller.py](gimbal_controller.py) - Singleton class for `GimbalController`. Serves as an adapter between the UDPReceiver and the serial port for wireless transmission. Maps head pose to gimbal angles (invert, offset, deadbands, and limits), smooths and slew-limits, assembles packets and transmits them, and runs the pose-loss failsafe. Optionally parses telemetry.  
-[heq_protocol.py](heq_protocol.py) - Protocol library and helper functions for the gimbal, including frame building, vendor-variant CRC32, the stream parser, and payload decoders.  
-[singleton.py](singleton.py) - Thread-safe `SingletonMeta` used by the `UDPReceiver` and `GimbalController` classes above.  
-[gimbal_config.json](gimbal_config.json) - Production configuration settings.  
-[motion_tests/](motion_tests/) - Sample scripts to test the gimbal's motion without HoloLens.  
+[main.py](main.py) - Entry point. Parses the CLI for arguments, loads config, constructs and starts UDPReceiver and GimbalController, handles termination.
+[udp_receiver.py](udp_receiver.py) - Owns the listen socket; a background thread keeps only the newest head pose, timestamped with a monotonic clock.
+[gimbal_controller.py](gimbal_controller.py) - Serves as an adapter between the UDPReceiver and the serial port for wireless transmission. Maps head pose to gimbal angles (invert, offset, deadbands, and limits), smooths and slew-limits, assembles packets and transmits them, and runs the pose-loss failsafe. Optionally parses telemetry.
+[heq_protocol.py](heq_protocol.py) - Protocol library and helper functions for the gimbal, including frame building, vendor-variant CRC32, the stream parser, and payload decoders.
+[gimbal_config.json](gimbal_config.json) - Production configuration settings.
+[motion_tests/](motion_tests/) - Sample scripts to test the gimbal's motion without HoloLens.
 [tests/](tests/) - Unit tests for Python scripts, powered via `pytest`.
 
 ## Setup and Usage
 
 ***IMPORTANT: You must be on a Windows machine for this to work.***
 
-### Gimbal
+### Hardware Materials
 
-**Materials Needed:**
-* HEQ G-PORT 3-axis Gimbal
-* Wiring kit with JST and DuPont connectors, available in AIH 107
-* USB to UART adapter for ground testing
-* LoRa UART radios with SMA antennas for wireless testing or drone flight
-* Power source: can be bench power supply or a battery with a voltage regulator
-* Voltmeter
-* In case something breaks, soldering equipment.
+**These should either be attached on the drone or tested on the ground:**
+* An HEQ G-PORT 3-axis Gimbal connected with UART output to a LoRa radio module. Gimbal connected to a power supply (or battery) with 12V output, and the UART LoRa radio connected to the power with a voltage regulator for 3.3-5V. All components should share the same GND.
+* A RunCam MicroV2 connected to an HDZero Freestyle V2 VTX, that has a u.FL to SMA antenna and a keypad attached to it. This should be powered with 12V. **NEVER power the VTX without the antenna!**
 
-_For your convenience, it's strongly recommended to study the protocol documentation PDF file in Teams. This will make comprehension of setup easier._
+**For the PC:**
+* An HDZero VRX with SMA antennas, plugged in the wall with the barrel connector. Mini HDMI output to a capture card plugged into the PC.
+* The other UART LoRa radio module (for the gimbal) plugged into a USB port on the PC. This is where gimbal teleoperation packets will be written/sent.
 
-**Steps:**
-1. TODO: This will be written when the system is finalized and assembled.
+_It's strongly recommended to study the gimbal protocol documentation PDF file in Teams. This will make comprehension of setup easier._
 
 ### HoloLens and Unity
 
-1. Make sure the HoloLens is connected to the same network as the computer (Wi-Fi or Ethernet) and the Unity repo is cloned to your machine.
-2. On the HoloLens, navigate to Holographic Remoting. Take note of the IP displayed.
-3. Configure Holographic Remoting in Unity with the HoloLens IP from Step 2.
-4. Click the Play button in Unity. You should be able to move your head and the roll/pitch/yaw of the HoloLens should be transmitted to the machine over UDP.
+**_Configure the Unity setup by following instructions in the Unity repo's README.md. Once that is done, follow the rest of the instructions below._**
 
 ### UDP Teleoperation Bridge
 
 1. Clone this repo to your machine.
 2. Create a venv in the root directory.
-3. Run `pip install -e ".[dev]` inside the root directory.
+3. Run `pip install -e ".[dev]"` inside the root directory.
 4. Plug in the USB to UART adapter (wired testing or wireless radio link) to your machine. Use Device Manager to locate which COM port matches with the UART adapter.
 5. Set the serial port in `gimbal_config.json`, such as `COM5`, `COM7`, etc.
 6. Run the teleoperation bridge using these commands:
@@ -60,7 +52,7 @@ python main.py -v                   # debug logging
 
 The Unity repo must be running (or `hololens_fake_test.py`) for poses to arrive. On startup with no poses, the controller gently holds center. On shutdown (Ctrl+C), the gimbal returns to its center position.
 
-`--telemetry` is off by default on purpose: the current radio modules do not support simultaneous bidirectional traffic well, and uplink telemetry alongside downlink commands increases packet loss. Enable it only with a wired USB connection on the bench or with upgraded LoRa radio modules.
+`--telemetry` is off by default. This is because the current radio modules do not support simultaneous bidirectional traffic well, and uplink telemetry alongside downlink commands increases packet loss. Enable it only with a wired USB connection on the bench or with upgraded LoRa radio modules.
 
 ### Config Settings
 
@@ -76,7 +68,7 @@ These are default settings from prior usage; you can tweak them as needed to fit
 
 ## Testing
 
-### Gimbal Motion Testing Tools
+### Gimbal Motion Testing
 
 Inside [motion_tests/](motion_tests/), you will find some test scripts for testing gimbal motion without HoloLens.
 
@@ -86,9 +78,9 @@ Inside [motion_tests/](motion_tests/), you will find some test scripts for testi
 
 These 3 files read from [gimbal_config.json](gimbal_config.json) with dynamic overrides available for `--port` as needed.
 
-### Software Testing Tools
+### Software Testing
 
-Automated unit tests live in [tests/](tests/) and cover the gimbal's protcol, the HoloLens-to-gimbal mapping math, the shutdown and failsafe behavior, and the UDP receiver.
+Automated unit tests live in [tests/](tests/) and cover the gimbal's protocol, the HoloLens-to-gimbal mapping math, the shutdown and failsafe behavior, and the UDP receiver.
 
 To run tests locally:
 ```bash
@@ -96,6 +88,4 @@ pycodestyle --exclude=.venv,venv,__pycache__,.pytest_cache .
 pytest
 ```
 
-Proper result is no output from pycodestyle (to verify formatting) and all tests passing.  
-
-Note that every push and pull request touching this subdirectory triggers [gimbal-ci.yml](../.github/workflows/gimbal-ci.yml) for GitHub Actions (CI). GitHub Actions will also run automated tests and format checks.
+Expect no output from pycodestyle (to verify formatting) and all tests passing.

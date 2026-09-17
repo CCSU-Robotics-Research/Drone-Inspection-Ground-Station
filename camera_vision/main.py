@@ -9,6 +9,7 @@ Usage::
     python main.py --device 2         # another camera index
     python main.py --device clip.mp4  # play a recording instead
     python main.py -v                 # debug logging
+    python main.py --stream           # sends frames to Unity
 
 Press q or Esc in the video window to quit. You may have to change
 the ``_CAPTURE_CARD`` field index below to get the correct source.
@@ -19,7 +20,8 @@ import logging
 
 import cv2
 
-from read_feed import BACKEND, CameraSource, FpsCounter
+from read_feed import CameraSource, FpsCounter
+from stream import FrameStreamer
 
 _CAPTURE_CARD = "2"
 
@@ -37,6 +39,11 @@ def parse_args() -> argparse.Namespace:
         help="camera index like 2, or a video file path"
     )
     parser.add_argument(
+        "--stream",
+        action="store_true",
+        help="send frames over TCP for Unity",
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
@@ -45,10 +52,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run(device) -> None:
+def run(device, stream_enabled: bool) -> None:
     """Open the camera and display frames until quit/stall."""
     source = CameraSource(device)
     source.open()
+
+    streamer = None
+    if stream_enabled:
+        streamer = FrameStreamer()
+        streamer.start()
 
     fps_counter = FpsCounter()
     misses = 0
@@ -65,6 +77,11 @@ def run(device) -> None:
                     break
                 continue
             misses = 0
+
+            if streamer is not None:
+                # Copy so FPS overlay (code below in OpenCV) doesn't
+                # appear in HoloLens
+                streamer.send(frame.copy())
 
             fps = fps_counter.tick()
             cv2.putText(
@@ -85,6 +102,8 @@ def run(device) -> None:
     except KeyboardInterrupt:
         _LOG.info("Interrupted")
     finally:
+        if streamer is not None:
+            streamer.stop()
         source.close()
         cv2.destroyAllWindows()
         _LOG.info("Camera closed")
@@ -100,7 +119,7 @@ def main() -> None:
     )
 
     device = int(args.device) if args.device.isdigit() else args.device
-    run(device)
+    run(device, args.stream)
 
 
 if __name__ == "__main__":
