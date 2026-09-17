@@ -36,7 +36,7 @@ def pack_frame(payload: bytes) -> bytes:
 def encode_jpeg(frame) -> bytes:
     """JPEG-encode one BGR frame."""
     ok, buf = cv2.imencode(
-        ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80]
+        ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 90]
     )
     if not ok:
         raise RuntimeError("JPEG encoding failed")
