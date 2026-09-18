@@ -119,14 +119,13 @@ def main() -> int:
         print("\n[LAUNCH] Ctrl+C: waiting for components to finish "
               "shutting down\n")
         user_interrupted = True
-
-    if not user_interrupted:
-        try:
-            _request_shutdown(procs)
-        except KeyboardInterrupt:
-            pass
-
-    _wait_for_exit(procs)
+    finally:
+        if not user_interrupted:
+            try:
+                _request_shutdown(procs)
+            except KeyboardInterrupt:
+                pass
+        _wait_for_exit(procs)
 
     worst_exit_code = 0
     for name, proc in procs:
