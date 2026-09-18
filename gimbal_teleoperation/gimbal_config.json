@@ -4,7 +4,7 @@
         "listen_port": 5005
     },
     "serial": {
-        "port": "COM5",
+        "port": "COM4",
         "baud": 115200
     },
     "control": {
