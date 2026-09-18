@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - "gimbal_teleoperation/**"
       - "camera_vision/**"
-  pull-request:
+  pull_request:
     paths-ignore:
       - "gimbal_teleoperation/**"
       - "camera_vision/**"
