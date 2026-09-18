@@ -117,7 +117,7 @@ def main() -> int:
                 break
     except KeyboardInterrupt:
         print("\n[LAUNCH] Ctrl+C: waiting for components to finish "
-            "shutting down\n")
+              "shutting down\n")
         user_interrupted = True
 
     if not user_interrupted:
