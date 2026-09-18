@@ -27,13 +27,14 @@ jobs:
         run: pip install pycodestyle
 
       - name: Lint and syntax-check all root-level scripts
-        shell: bash
         run: |
-          files=$(ls *.py 2>/dev/null || true)
-          if [ -z "$files" ]; then
-            echo "no root-level python files to check"
+          $files = Get-ChildItem -File -Filter *.py |
+              ForEach-Object FullName
+          if (-not $files) {
+            Write-Host "no Python files to check"
             exit 0
-          files
-          echo "checking: $files"
+          }
+          Write-Host "checking: $files"
           pycodestyle $files
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m py_compile $files
