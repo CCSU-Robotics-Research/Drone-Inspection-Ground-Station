@@ -1,0 +1,37 @@
+# CI for any code in the repo root. The self-contained
+# components are not included here.
+
+name: repo-root
+
+on:
+  push:
+    paths-ignore:
+      - "gimbal_teleoperation/**"
+      - "camera_vision/**"
+  pull-request:
+    paths-ignore:
+      - "gimbal_teleoperation/**"
+      - "camera_vision/**"
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install lint tool
+        run: pip install pycodestyle
+
+      - name: Lint and syntax-check all root-level scripts
+        shell: bash
+        run: |
+          files=$(ls *.py 2>/dev/null || true)
+          if [ -z "$files" ]; then
+            echo "no root-level python files to check"
+            exit 0
+          files
+          echo "checking: $files"
+          pycodestyle $files
+          python -m py_compile $files
