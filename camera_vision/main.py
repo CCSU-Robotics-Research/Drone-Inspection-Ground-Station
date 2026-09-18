@@ -17,6 +17,7 @@ the ``_CAPTURE_CARD`` field index below to get the correct source.
 
 import argparse
 import logging
+import sys
 
 import cv2
 
@@ -39,9 +40,10 @@ def parse_args() -> argparse.Namespace:
         help="camera index like 2, or a video file path"
     )
     parser.add_argument(
-        "--stream",
-        action="store_true",
-        help="send frames over TCP for Unity",
+        "--no-stream",
+        dest="stream",
+        action="store_false",
+        help="does not send frames over TCP for Unity",
     )
     parser.add_argument(
         "-v",
@@ -60,7 +62,15 @@ def run(device, stream_enabled: bool) -> None:
     streamer = None
     if stream_enabled:
         streamer = FrameStreamer()
-        streamer.start()
+        try:
+            streamer.start()
+        except OSError:
+            source.close()
+            sys.exit(
+                "[CAMERA] port 5010 already in use, is another "
+                "camera_vision instance running? Use --no-stream "
+                "for a second local viewer"
+            )
 
     fps_counter = FpsCounter()
     misses = 0
