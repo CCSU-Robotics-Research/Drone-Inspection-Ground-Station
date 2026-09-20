@@ -10,7 +10,7 @@ This repository houses all of the components for the ground station of the drone
 
 ## Repository Map
 
-[gimbal_teleoperation/](gimbal_teleoperation/) - Contains all code for wireless teleoperation of the gimbal
+[gimbal_teleoperation/](gimbal_teleoperation/) - Contains all code for wireless teleoperation of the gimbal  
 [camera_vision/](camera_vision/) - Reads the drone camera feed and streams it to the HoloLens via the Unity repo. **TODO: Add AI analysis and annotation of the video feed with offline recording.**
 
 ## Setup
