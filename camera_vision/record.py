@@ -30,7 +30,7 @@ _DEFAULT_DIR = "recordings"
 class VideoRecorder:
     """Writes contiguous frames to an auto-named video file."""
 
-    def __init(self, output_dir: str = _DEFAULT_DIR) -> None:
+    def __init__(self, output_dir: str = _DEFAULT_DIR) -> None:
         self._dir = Path(output_dir)
         self._lock = threading.Lock()
 
@@ -42,7 +42,7 @@ class VideoRecorder:
     @property
     def is_recording(self) -> bool:
         with self._lock:
-            returns self._writer is not None
+            return self._writer is not None
 
     @property
     def path(self) -> Optional[Path]:
@@ -63,7 +63,7 @@ class VideoRecorder:
                 _LOG.info("Already recording to %s", self._path)
                 return self._path
 
-            self._dir.mkdir(parents=True, exists_ok=True)
+            self._dir.mkdir(parents=True, exist_ok=True)
             path = self._unique_path()
 
             if fps <= 0:
@@ -83,7 +83,7 @@ class VideoRecorder:
             self._writer = writer
             self._path = path
             self._frames = 0
-            slef._started_at = time.monotonic()
+            self._started_at = time.monotonic()
 
             _LOG.info(
                 "Recording to %s (%dx%d @ %.1f fps, %s)",
