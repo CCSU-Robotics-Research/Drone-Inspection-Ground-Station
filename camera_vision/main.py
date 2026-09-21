@@ -26,6 +26,7 @@ import time
 
 import cv2
 
+from commands import CommandListener
 from read_feed import CameraSource, FpsCounter
 from record import VideoRecorder
 from stream import FrameStreamer
@@ -137,6 +138,15 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
 
     signal.signal(signal.SIGINT, _request_stop)
 
+    commands = CommandListener({
+        "record:toggle": _toggle_recording,
+        "record:start": lambda: recorder.start(
+            (source.width, source.height), source.fps
+        ),
+        "record:stop": recorder.stop
+    })
+    commands.start()
+
     fps_counter = FpsCounter()
     misses = 0
 
@@ -180,6 +190,7 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
             elif key == ord("r"):
                 _toggle_recording()
     finally:
+        commands.stop()
         recorder.stop()
         if streamer is not None:
             streamer.stop()
