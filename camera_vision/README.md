@@ -35,7 +35,7 @@ python main.py -v                   # Debug logging
 
 ## Streaming to Unity
 
-`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. The local window's FPS overlay is omitted from the Unity stream so the operator's view is not clutter-heavy.
+`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. Note the FPS indicator is not visible via HoloLens, but recording indicator is.
 
 ### Video Transmission Protocol
 
