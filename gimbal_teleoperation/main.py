@@ -107,7 +107,7 @@ def main() -> None:
     receiver.start()
     controller.start()
     _LOG.info(
-        "Bridge running: %s -> %s @ %.0f Hz",
+        "Bridge running: %s, writing to %s @ %.0f Hz",
         f"udp:{config['udp']['listen_port']}",
         config["serial"]["port"],
         config["control"]["update_hz"],
