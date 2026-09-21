@@ -54,6 +54,19 @@ def _draw_rec(frame) -> None:
     )
 
 
+def _draw_fps(frame, fps: float) -> None:
+    """Measured-FPS overlay annotation over the camera feed."""
+    cv2.putText(
+        frame,
+        f"{fps:.1f} FPS",
+        (10, frame.shape[0] - 15),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.8,
+        (0, 255, 0),
+        2,
+    )
+
+
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(
@@ -142,16 +155,7 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
                     _draw_rec(stream_frame)
                 streamer.send(stream_frame)
 
-            fps = fps_counter.tick()
-            cv2.putText(
-                frame,
-                f"{fps:.1f} FPS",
-                (10, frame.shape[0] - 15),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
-                (0, 255, 0),
-                2,
-            )
+            _draw_fps(frame, fps_counter.tick())
 
             if rec_visible:
                 _draw_rec(frame)
