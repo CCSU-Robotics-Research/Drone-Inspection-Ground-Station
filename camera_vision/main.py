@@ -127,6 +127,7 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
         _toggle_recording()
 
     stop_requested = False
+
     def _request_stop(signum, frame):
         nonlocal stop_requested
         stop_requested = True
