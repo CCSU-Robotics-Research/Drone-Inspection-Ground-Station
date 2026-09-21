@@ -59,4 +59,3 @@ def TestCommandListener:
         send(listener.port, b"record:toggle")
         assert wait_until(lambda: len(calls) == 1)
         listener.stop()
-
