@@ -89,3 +89,21 @@ class TestVideoRecorder:
         cap = cv2.VideoCapture(str(path))
         assert cap.get(cv2.CAP_PROP_FPS) == pytest.approx(30.0)
         cap.release()
+
+    def test_toggle_cycle_two_recordings(self, recorder):
+        # Start, write, stop cycle twice
+        paths = []
+        for value in (40, 200):
+            paths.append(recorder.start((_WIDTH, _HEIGHT), fps=10.0))
+            for _ in range(5):
+                recorder.write(make_frame(value))
+            recorder.stop()
+
+        assert paths[0] != paths[1]
+        for path in paths:
+            cap = cv2.VideoCapture(str(path))
+            frames = 0
+            while cap.read()[0]:
+                frames += 1
+            cap.release()
+            assert frames == 5
