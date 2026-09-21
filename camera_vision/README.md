@@ -11,6 +11,7 @@ The camera feed can also be recorded to the ground station disk for offline anal
 [main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station. With `--stream` argument, the video feed is sent to Unity.
 [read_feed.py](read_feed.py) - `CameraSource` handles reading from the capture device and produces frames. `FpsCounter` measures the FPS achieved.
 [stream.py](stream.py) - Streams the feed TO unity. Includes `FrameStreamer` which streams via TCP, plus the framing helpers and encoder for JPEG.
+[commands.py](commands.py) - UDP listener for HoloLens FOV commands. Namely for recording start/stop
 [recordings/] - Storage for offline recordings.
 [tests/](tests/) - Unit tests for the scripts via `pytest`.
 
@@ -55,6 +56,14 @@ The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expecte
 * Recordings capture the raw feed from the camera without any annotations or overlays.
 * Files are auto-named `rec_YYYYMMDD_HHMMSS.avi` and can be found in `recordings/`.
 
+### Recording Command Protocol
+
+Things to know about the HoloLens to ground station remote control for video recording; the Unity repo conforms to this:
+
+* `camera_vision` listes for UDP datagrams on `127.0.0.1:5011` for commands from Unity.
+* Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`.
+* Unknown commands are ignored.
+
 ## Camera Notes
 
 * If a camera refuses to open, try a different camera index. This 0-based index should correspond to the order of devices listed in Windows camera settings. Note: you can change this default constant `_CAPTURE_CARD` at the top of `main.py`.
@@ -64,7 +73,7 @@ The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expecte
 
 ## Software Testing
 
-Automated unit tests live in [tests/](tests/) and cover the FPS counter math, `CameraSource` behavior against a temp dummy video file, the stream framing, the JPEG payload encode/decode,  `FrameStreamer` against a real localhost socket, and `VideoRecorder`'s full end-to-end behavior.
+Automated unit tests live in [tests/](tests/) and cover each of the different components.
 
 To run tests locally:
 ```bash
