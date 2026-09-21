@@ -117,6 +117,7 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
                 "for a second local viewer"
             )
 
+    # Toggles recording on/off
     def _toggle_recording() -> None:
         if recorder.is_recording:
             recorder.stop()
@@ -128,6 +129,7 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
 
     stop_requested = False
 
+    # Handling shutdowns
     def _request_stop(signum, frame):
         nonlocal stop_requested
         stop_requested = True
