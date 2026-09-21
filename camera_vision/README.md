@@ -2,6 +2,8 @@
 
 This subdirectory handles camera processing on the ground station. The camera feed is transmitted from the drone wirelessly via VTX to VRX, which gets read into a capture card on the ground station. The ground station code then processes it and streams it to the HoloLens via the Unity repo. The ground station also plays the video back in an OpenCV window.
 
+The camera feed can also be recorded to the ground station disk for offline analysis.
+
 **TODO: Incorporate AI annotation and analysis with DINOv3 and YOLO.**
 
 ## Components
@@ -9,6 +11,7 @@ This subdirectory handles camera processing on the ground station. The camera fe
 [main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station. With `--stream` argument, the video feed is sent to Unity.
 [read_feed.py](read_feed.py) - `CameraSource` handles reading from the capture device and produces frames. `FpsCounter` measures the FPS achieved.
 [stream.py](stream.py) - Streams the feed TO unity. Includes `FrameStreamer` which streams via TCP, plus the framing helpers and encoder for JPEG.
+[recordings/] - Storage for offline recordings.
 [tests/](tests/) - Unit tests for the scripts via `pytest`.
 
 ## Setup and Usage
@@ -17,20 +20,22 @@ This subdirectory handles camera processing on the ground station. The camera fe
 2. Run `pip install -e ".[dev]"` inside this directory.
 3. Run the camera vision program with the following commands
 
-```py
-python main.py                      # Playback for default capture device
+```bash
+python main.py                      # Playback + stream to Unity
 python main.py --device 0           # Different capture device index
 python main.py --device clip.mp4    # Play a video
-python main.py --stream             # Send frames to Unity
+python main.py --record             # Start recording immediately
+python main.py --no-stream          # Playback only, no Unity stream
 python main.py -v                   # Debug logging
 ```
 
-4. To quit, perss `q` or `Esc`.
+4. To start/stop recording, press `r`. An indicator will show recording in progress.
+4. To quit, press `q` or `Esc`.
 5. For troubleshooting camera behavior, see _Camera Notes_ section below.
 
 ## Streaming to Unity
 
-`python main.py --stream` sends the feed to the Unity repo. The local window's FPS overlay is omitted from the Unity stream so the operator's view is not clutter-heavy. JPEG quality is the constant inside `encode_jpeg()` in `stream.py`. To increase quality of the streamed image, adjust this constant.
+`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. The local window's FPS overlay is omitted from the Unity stream so the operator's view is not clutter-heavy.
 
 ### Video Transmission Protocol
 
@@ -43,6 +48,13 @@ These are important things to know about how the video streaming is structured i
 * The server sends the newest available frame without queueing or blocking to minimize delay. If no client is connected, frames are dropped adn capture continues unaffected.
 * The client does not know any details about the frames being transmitted (such as AI annotations); it simply renders and displays what it receives.
 
+## Recording
+
+The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expected 0.3-0.5GB per minute of 720p30 video. For lossless recording, switch `_FOURCC` in [record.py](record.py) to `"FFV1"`. This will yield larger files.
+
+* Recordings capture the raw feed from the camera without any annotations or overlays.
+* Files are auto-named `rec_YYYYMMDD_HHMMSS.avi` and can be found in `recordings/`.
+
 ## Camera Notes
 
 * If a camera refuses to open, try a different camera index. This 0-based index should correspond to the order of devices listed in Windows camera settings. Note: you can change this default constant `_CAPTURE_CARD` at the top of `main.py`.
@@ -52,7 +64,7 @@ These are important things to know about how the video streaming is structured i
 
 ## Software Testing
 
-Automated unit tests live in [tests/](tests/) and cover the FPS counter math, `CameraSource` behavior against a temp dummy video file, the stream framing, the JPEG payload encode/decode, and `FrameStreamer` against a real localhost socket.
+Automated unit tests live in [tests/](tests/) and cover the FPS counter math, `CameraSource` behavior against a temp dummy video file, the stream framing, the JPEG payload encode/decode,  `FrameStreamer` against a real localhost socket, and `VideoRecorder`'s full end-to-end behavior.
 
 To run tests locally:
 ```bash
