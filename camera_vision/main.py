@@ -21,6 +21,7 @@ the ``_CAPTURE_CARD`` field index below to get the correct source.
 import argparse
 import logging
 import sys
+import time
 
 import cv2
 
@@ -31,6 +32,26 @@ from stream import FrameStreamer
 _CAPTURE_CARD = "2"
 
 _LOG = logging.getLogger("main")
+
+
+def _draw_rec(frame) -> None:
+    """Indicator for recording when toggled at the bottom-right."""
+    cv2.circle(
+        frame,
+        (frame.shape[1] - 105, frame.shape[0] - 23),
+        8,
+        (0, 0, 255),
+        -1,
+    )
+    cv2.putText(
+        frame,
+        "REC",
+        (frame.shape[1] - 90, frame.shape[0] - 15),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.8,
+        (0, 0, 255),
+        2,
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -109,40 +130,30 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
 
             # Raw frame recording
             recorder.write(frame)
+            rec_visible = (
+                recorder.is_recording
+                and time.monotonic() % 1.0 < 0.5
+            )
 
-            if streamer is not None:
-                # Copy so FPS overlay (code below in OpenCV) doesn't
-                # appear in HoloLens
-                streamer.send(frame.copy())
+            # FPS indicator does not reach Unity but REC does
+            stream_frame = frame.copy()
+            if rec_visible:
+                _draw_rec(stream_frame)
+            streamer.send(stream_frame)
 
             fps = fps_counter.tick()
             cv2.putText(
                 frame,
                 f"{fps:.1f} FPS",
-                (10, 30),
+                (10, frame.shape[0] - 15),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.8,
                 (0, 255, 0),
                 2,
             )
 
-            if recorder.is_recording:
-                cv2.circle(
-                    frame,
-                    (frame.shape[1] - 105, 26),
-                    8,
-                    (0, 0, 255),
-                    -1,
-                )
-                cv2.putText(
-                    frame,
-                    "REC",
-                    (frame.shape[1] - 90, 34),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.8,
-                    (0, 0, 255),
-                    2,
-                )
+            if rec_visible:
+                _draw_rec(frame)
 
             cv2.imshow("Camera Vision", frame)
             key = cv2.waitKey(1) & 0xFF
