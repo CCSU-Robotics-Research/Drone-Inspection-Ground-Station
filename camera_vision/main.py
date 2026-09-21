@@ -5,12 +5,12 @@ a measured-FPS overlay.
 
 Usage::
 
-    python main.py                    # open device 0
+    python main.py                    # open device 0 and streams
     python main.py --device 2         # another camera index
     python main.py --device clip.mp4  # play a recording instead
     python main.py --record           # records immediately
     python main.py -v                 # debug logging
-    python main.py --stream           # sends frames to Unity
+    python main.py --no-stream        # blocks Unity streaming
 
 Press r at anytime to toggle recording.
 
