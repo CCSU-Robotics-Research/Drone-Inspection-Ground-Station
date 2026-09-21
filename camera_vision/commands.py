@@ -33,7 +33,7 @@ class CommandListener:
         self._host = host
         self._requested_port = port
 
-        self._sock = Optional[socket.socket] = None
+        self._sock: Optional[socket.socket] = None
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
 
@@ -46,7 +46,7 @@ class CommandListener:
 
     def start(self) -> None:
         """Bind and start dispatching in a background thread."""
-        self._sock = socket.socket(socket.AFI_INET, socket.SOCK_DGRAM)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock.bind((self._host, self._requested_port))
         self._sock.settimeout(0.5)
 
@@ -56,7 +56,7 @@ class CommandListener:
 
         self._stop_event.clear()
         self._thread = threading.Thread(
-            target=self._serve, name="command-listener", daemon=True
+            target=self._listen_and_delegate, name="command-listener", daemon=True
         )
         self._thread.start()
 
@@ -70,7 +70,7 @@ class CommandListener:
             self._sock.close()
             self._sock = None
 
-    def _delegate_server(self) -> None:
+    def _listen_and_delegate(self) -> None:
         while not self._stop_event.is_set():
             try:
                 data, _ = self._sock.recvfrom(256)
