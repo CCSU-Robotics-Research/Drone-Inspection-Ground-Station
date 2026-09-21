@@ -20,6 +20,7 @@ the ``_CAPTURE_CARD`` field index below to get the correct source.
 
 import argparse
 import logging
+import signal
 import sys
 import time
 
@@ -125,11 +126,19 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
     if record_on_start:
         _toggle_recording()
 
+    stop_requested = False
+    def _request_stop(signum, frame):
+        nonlocal stop_requested
+        stop_requested = True
+        _LOG.info("Shutdown requested")
+
+    signal.signal(signal.SIGINT, _request_stop)
+
     fps_counter = FpsCounter()
     misses = 0
 
     try:
-        while True:
+        while not stop_requested:
             frame = source.read()
             if frame is None:
                 misses += 1
@@ -167,8 +176,6 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
                 break
             elif key == ord("r"):
                 _toggle_recording()
-    except KeyboardInterrupt:
-        _LOG.info("Interrupted")
     finally:
         recorder.stop()
         if streamer is not None:

@@ -89,8 +89,6 @@ def _wait_for_exit(procs: list) -> None:
                 except subprocess.TimeoutExpired:
                     proc.kill()
                 break
-            except KeyboardInterrupt:
-                continue
 
 
 def main() -> int:
@@ -120,11 +118,9 @@ def main() -> int:
               "shutting down\n")
         user_interrupted = True
     finally:
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
         if not user_interrupted:
-            try:
-                _request_shutdown(procs)
-            except KeyboardInterrupt:
-                pass
+            _request_shutdown(procs)
         _wait_for_exit(procs)
 
     worst_exit_code = 0
