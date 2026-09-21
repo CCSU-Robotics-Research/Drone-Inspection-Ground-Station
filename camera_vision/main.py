@@ -136,10 +136,11 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
             )
 
             # FPS indicator does not reach Unity but REC does
-            stream_frame = frame.copy()
-            if rec_visible:
-                _draw_rec(stream_frame)
-            streamer.send(stream_frame)
+            if streamer is not None:
+                stream_frame = frame.copy()
+                if rec_visible:
+                    _draw_rec(stream_frame)
+                streamer.send(stream_frame)
 
             fps = fps_counter.tick()
             cv2.putText(
