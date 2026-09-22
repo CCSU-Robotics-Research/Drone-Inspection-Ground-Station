@@ -37,23 +37,16 @@ _LOG = logging.getLogger("main")
 
 
 def _draw_rec(frame) -> None:
-    """Indicator for recording when toggled at the bottom-right."""
-    cv2.circle(
-        frame,
-        (frame.shape[1] - 105, frame.shape[0] - 23),
-        8,
-        (0, 0, 255),
-        -1,
-    )
-    cv2.putText(
-        frame,
-        "REC",
-        (frame.shape[1] - 90, frame.shape[0] - 15),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.8,
-        (0, 0, 255),
-        2,
-    )
+    """Indicator for recording when toggled at the bottom-right.
+    Layered with a black in the background."""
+    dot = (frame.shape[1] - 200, frame.shape[0] - 36)
+    text_at = (frame.shape[1] - 175, frame.shape[0] - 20)
+    cv2.circle(frame, dot, 17, (0, 0, 0), -1)
+    cv2.circle(frame, dot, 17, (0, 0, 255), -1)
+    cv2.putText(frame, "REC", text_at, cv2.FONT_HERSHEY_SIMPLEX,
+                1.6, (0, 0, 0), 8)
+    cv2.putText(frame, "REC", text_at, cv2.FONT_HERSHEY_SIMPLEX,
+                1.6, (0, 0, 255), 4)
 
 
 def _draw_fps(frame, fps: float) -> None:
