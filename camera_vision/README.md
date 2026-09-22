@@ -8,11 +8,11 @@ The camera feed can also be recorded to the ground station disk for offline anal
 
 ## Components
 
-[main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station. With `--stream` argument, the video feed is sent to Unity.
+[main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station and streams to Unity. With `--no-stream` argument, the video feed is not sent to Unity.
 [read_feed.py](read_feed.py) - `CameraSource` handles reading from the capture device and produces frames. `FpsCounter` measures the FPS achieved.
 [stream.py](stream.py) - Streams the feed TO unity. Includes `FrameStreamer` which streams via TCP, plus the framing helpers and encoder for JPEG.
 [commands.py](commands.py) - UDP listener for HoloLens FOV commands. Namely for recording start/stop
-[recordings/] - Storage for offline recordings.
+`recordings/` - Storage for offline recordings.
 [tests/](tests/) - Unit tests for the scripts via `pytest`.
 
 ## Setup and Usage
@@ -31,8 +31,8 @@ python main.py -v                   # Debug logging
 ```
 
 4. To start/stop recording, press `r`. An indicator will show recording in progress.
-4. To quit, press `q` or `Esc`.
-5. For troubleshooting camera behavior, see _Camera Notes_ section below.
+5. To quit, press `q` or `Esc`.
+6. For troubleshooting camera behavior, see _Camera Notes_ section below.
 
 ## Streaming to Unity
 
@@ -46,7 +46,7 @@ These are important things to know about how the video streaming is structured i
 * The stream of data transmitted is structured as a little-endian uint32 denoting the length of the payload, followed by the JPEG payload itself.
 * Length must be a nonzero number <= 8MB (8388608 bytes). Anything larger could possibly indicate a corrupted stream.
 * Each payload is one complete JPEG image (BGR source). The frame resolution may change from frame to frame.
-* The server sends the newest available frame without queueing or blocking to minimize delay. If no client is connected, frames are dropped adn capture continues unaffected.
+* The server sends the newest available frame without queueing or blocking to minimize delay. If no client is connected, frames are dropped and capture continues unaffected.
 * The client does not know any details about the frames being transmitted (such as AI annotations); it simply renders and displays what it receives.
 
 ## Recording
@@ -60,7 +60,7 @@ The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expecte
 
 Things to know about the HoloLens to ground station remote control for video recording; the Unity repo conforms to this:
 
-* `camera_vision` listes for UDP datagrams on `127.0.0.1:5011` for commands from Unity.
+* `camera_vision` listens for UDP datagrams on `127.0.0.1:5011` for commands from Unity.
 * Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`.
 * Unknown commands are ignored.
 

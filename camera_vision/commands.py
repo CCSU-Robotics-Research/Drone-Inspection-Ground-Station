@@ -51,12 +51,14 @@ class CommandListener:
         self._sock.settimeout(0.5)
 
         _LOG.info(
-            "Listening for commands on %s:5d", self._host, self.port
+            "Listening for commands on %s:%d", self._host, self.port
         )
 
         self._stop_event.clear()
         self._thread = threading.Thread(
-            target=self._listen_and_delegate, name="command-listener", daemon=True
+            target=self._listen_and_delegate,
+            name="command-listener",
+            daemon=True
         )
         self._thread.start()
 
@@ -85,7 +87,7 @@ class CommandListener:
                 _LOG.warning("Unknown command: %r", command)
                 continue
 
-            _LOG.info("Cmmand: %s", command)
+            _LOG.info("Command: %s", command)
             try:
                 handler()
             except Exception:
