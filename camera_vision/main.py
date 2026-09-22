@@ -166,6 +166,7 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
             # FPS indicator does not reach Unity but REC does
             if streamer is not None:
                 stream_frame = frame.copy()
+                stream_frame[stream_frame < 16] = 16
                 if rec_visible:
                     _draw_rec(stream_frame)
                 streamer.send(stream_frame)
