@@ -12,14 +12,20 @@ The camera feed can also be recorded to the ground station disk for offline anal
 [read_feed.py](read_feed.py) - `CameraSource` handles reading from the capture device and produces frames. `FpsCounter` measures the FPS achieved.
 [stream.py](stream.py) - Streams the feed TO unity. Includes `FrameStreamer` which streams via TCP, plus the framing helpers and encoder for JPEG.
 [commands.py](commands.py) - UDP listener for HoloLens FOV commands. Namely for recording start/stop
+[ai/](ai/) - Defect detection package, including DINOv3. To access this, install the appropriate dependencies via `pip install -e ".[ai]"`.
 `recordings/` - Storage for offline recordings.
+`models/` - Storage for DINOv3 model weight files (*.pth).
 [tests/](tests/) - Unit tests for the scripts via `pytest`.
 
 ## Setup and Usage
 
 1. Create a venv in this directory and activate it.
-2. Run `pip install -e ".[dev]"` inside this directory.
-3. Run the camera vision program with the following commands
+2. Install PyTorch with CUDA support using the selector at https://pytorch.org/get-started/locally (Windows, pip, CUDA 12.x).
+3. Install everything else with `pip install -e ".[dev,ai]"`
+4. Clone [https://github.com/facebookresearch/dinov3](https://github.com/facebookresearch/dinov3) next to this repo.
+5. Place the `dinov3_vits16_pretrain_lvd1689m-08c60483.pth` file inside `models/`. To get this file, you will need to request a license from Meta. You cannot find these weights in the repo. You will get an email with downloadable links for weights. Do not commit or redistribute the weights.
+6. Run `python -m ai.check_env` once after setup. Expect the GPU name, `loaded dinov3_vits16`, and a per-pass inference time in ms. This number sizes how many frames per second the live annotator can analyze. Proceed forward once this is ready.
+7. To run the camera vision program, use the following commands:
 
 ```bash
 python main.py                      # Playback + stream to Unity
@@ -30,9 +36,9 @@ python main.py --no-stream          # Playback only, no Unity stream
 python main.py -v                   # Debug logging
 ```
 
-4. To start/stop recording, press `r`. An indicator will show recording in progress.
-5. To quit, press `q` or `Esc`.
-6. For troubleshooting camera behavior, see _Camera Notes_ section below.
+8. To start/stop recording, press `r`. An indicator will show recording in progress.
+9. To quit, press `q` or `Esc`.
+10. For troubleshooting camera behavior, see _Camera Notes_ section below.
 
 ## Streaming to Unity
 
