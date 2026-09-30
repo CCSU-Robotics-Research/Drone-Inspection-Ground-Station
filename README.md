@@ -1,5 +1,6 @@
 # Drone Inspection Ground Station
 
+![repo-root](https://github.com/CCSU-Robotics-Research/Drone-Inspection-Ground-Station/actions/workflows/root-ci.yml/badge.svg)
 ![gimbal-teleoperation](https://github.com/CCSU-Robotics-Research/Drone-Inspection-Ground-Station/actions/workflows/gimbal-ci.yml/badge.svg)
 ![camera-vision](https://github.com/CCSU-Robotics-Research/Drone-Inspection-Ground-Station/actions/workflows/camera-ci.yml/badge.svg)
 
