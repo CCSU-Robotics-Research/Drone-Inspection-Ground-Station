@@ -27,8 +27,9 @@ class Detections:
     heatmap: Optional[np.ndarray] = None
 
     def __post_init__(self) -> None:
-        if not (len(self.boxes) == len(self.labels)
-            == len(self.scores)):
+        if not (
+            len(self.boxes) == len(self.labels) == len(self.scores)
+        ):
             raise ValueError(
                 "boxes, labels, and sores must be same length"
             )
