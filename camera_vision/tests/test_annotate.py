@@ -65,8 +65,9 @@ class TestDraw:
         assert np.array_equal(out, frame)
 
     def test_coarse_heatmap(self):
-        heat = np.array([[1.0, 0.0], [0.0, 0.0]],
-            dtype=np.float32)
+        heat = np.array(
+            [[1.0, 0.0], [0.0, 0.0]], dtype=np.float32
+        )
         out = draw(gray_frame(), Detections(heatmap=heat))
         assert out[4, 4, 2] > 150
         assert tuple(out[_H - 4, _W - 4]) == (100, 100, 100)

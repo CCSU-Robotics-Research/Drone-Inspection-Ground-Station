@@ -68,7 +68,9 @@ def _draw_box(img: np.ndarray, box, text: str) -> None:
     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), 4)
     cv2.rectangle(img, (x1, y1), (x2, y2), _BOX_COLOR, 2)
     text_at = (x1, max(y1 - 8, 14))
-    cv2.putText(img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX,
-        0.6, (0, 0, 0), 4)
-    cv2.putText(img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX,
-        0.6, _BOX_COLOR, 2)
+    cv2.putText(
+        img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 4
+    )
+    cv2.putText(
+        img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX, 0.6, _BOX_COLOR, 2
+    )
