@@ -33,3 +33,9 @@ class Detections:
                 "boxes, labels, and sores must be same length"
             )
 
+
+class Detector(Protocol):
+    """Anything that turns a frame into Detections."""
+
+    def analyze(self, frame: np.ndarray) -> Detections:
+        ...
