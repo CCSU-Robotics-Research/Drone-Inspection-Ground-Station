@@ -4,6 +4,11 @@ Extracts DINOv3 features for every tile in the dataset's
 ``Positive`` and ``Negative`` folders, fits a logistic-regression
 probe on an 80/20 stratified split, prints the validation
 accuracy, and saves the probe to ``models/probe.joblib``.
+
+Usage::
+
+    python probe_train.py
+    python probe_train.py --limit <max_image_count>
 """
 
 import argparse
@@ -109,4 +114,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
