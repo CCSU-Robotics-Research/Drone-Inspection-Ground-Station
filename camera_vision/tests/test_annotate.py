@@ -52,6 +52,12 @@ class TestDraw:
         assert tuple(out[30, 25]) == (0, 0, 0)
 
     def test_label_renders_above_box(self):
+        out = draw(black_frame(), Detections(
+            boxes=[(10, 30, 40, 44)], labels=["crack"],
+            scores=[0.9]))
+        assert out[:28, :, :].any()
+
+    def test_heatmap_hot_region(self):
         heat = np.zeros((8, 8), dtype=np.float32)
         heat[:4, :4] = 1.0
         out = draw(gray_frame(), Detections(heatmap=heat))
