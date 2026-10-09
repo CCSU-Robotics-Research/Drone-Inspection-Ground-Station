@@ -65,13 +65,13 @@ def preprocess(images_bgr, device) -> "torch.Tensor":
 
 def extract_patch_features(model, x) -> "torch.Tensor":
     """Per patch features (batch, 196, 384) for 224 input"""
-    return model.forwardfeatures(x)["x_norm_patchtokens"]
+    return model.forward_features(x)["x_norm_patchtokens"]
 
 
 def assemble(
     blocks: np.ndarray,
     rows: int,
-    cols, int
+    cols: int
 ) -> np.ndarray:
     """Stitch (rows*cols, P, P) blocks into one (rows*P, cols*P)
     grid, row-major order, matching tile order from analyze()"""
@@ -109,8 +109,8 @@ class DinoCrackDetector:
     def analyze(self, frame: np.ndarray) -> Detections:
         h, w = frame.shape[:2]
         stride = TILE if self.fine else STRIDE
-        ys = tile_starts(h, TILE, STRIDE)
-        xs = tile_starts(w, TILE, STRIDE)
+        ys = tile_starts(h, TILE, stride)
+        xs = tile_starts(w, TILE, stride)
         tiles = [frame[y:y + TILE, x:x + TILE]
                  for y in ys for x in xs]
 
@@ -132,7 +132,7 @@ class DinoCrackDetector:
                 else:
                     feats = self.model(x).cpu().numpy()
                     pieces.append(
-                        sle.fprobe.predict_proba(feats)[:, 1]
+                        self.probe.predict_proba(feats)[:, 1]
                     )
         if self.fine:
             blocks = np.concatenate(pieces).astype(np.float32)
