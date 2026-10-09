@@ -51,13 +51,14 @@ def main() -> int:
     peak = frames[mean.index(max(mean))]
     ax1.axvline(peak, color="gray", linestyle="--", linewidth=1)
     ax1.set_title(f"{src.stem} - peak heat_mean "
-                 f"{max(mean):.3f} at frame {peak}")
+                  f"{max(mean):.3f} at frame {peak}")
     fig.tight_layout()
 
     out = src.with_name(src.stem + "_plot.png")
     fig.savefig(out, dpi=110)
     print(f"wrote {out}")
     return 0
+
 
 if __name__ == "__main__":
     main()
