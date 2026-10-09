@@ -1,16 +1,10 @@
 """Train the crack probe on the Kaggle surface-crack tiles.
 
-Extracts DINOv3 features for every tile in the dataset's
-``Positive`` and ``Negative`` folders, fits a logistic-regression
-probe on an 80/20 stratified split, prints the validation
-accuracy, and saves the probe.
-
-Default mode is one feature per tile, which is saved to
-``models/probe.joblib``. The ``--fine`` arg creates features for
-individual 16 px patches, a few sampld per tile. This "fine-grain"
-probe is saved to ``models/probe_fine.joblib``. Patch labels are
-inherited from the whole tile, which is weak supervision. This will
-cause a dip in accuracy but create a finer heat map for annotation.
+Extracts DINOv3 features, a summary vector per tile, for every
+image in the dataset's ``Positive`` and ``Negative`` folders,
+fits a logistic regression probe on an 80/20 stratified split,
+prints the validation accuracy, and saves the probe to
+``models/probe.joblib``.
 """
 
 import argparse
@@ -42,14 +36,6 @@ def parse_args() -> argparse.Namespace:
         help="use at most N images per class for quick runs",
     )
     parser.add_argument("--batch", type=int, default=64)
-    parser.add_argument(
-        "--fine", action="store_true",
-        help="train the fine, per-patch probe"
-    )
-    parser.add_argument(
-        "--patches-per-tile", type=int, default=8,
-        help="patches sampled per tile in --fine mode"
-    )
     return parser.parse_args()
 
 
@@ -71,29 +57,16 @@ def gather(root: Path, limit) -> list:
     return items
 
 
-def extract_features(items, model, device, batch_size,
-                     patch=False, per_tile=8):
+def extract_features(items, model, device, batch_size):
     feats, labels = [], []
-    rng = np.random.default_rng(0)
     start = time.perf_counter()
     with torch.no_grad():
         for i in range(0, len(items), batch_size):
             chunk = items[i:i + batch_size]
             images = [cv2.imread(str(p)) for p, _ in chunk]
             x = dino.preprocess(images, device)
-            if patch:
-                toks = dino.extract_patch_features(
-                    model, x
-                ).cpu().numpy()
-                for b, (_, label) in enumerate(chunk):
-                    idx = rng.choice(
-                        toks.shape[1], per_tile, replace=False
-                    )
-                    feats.append(toks[b, idx])
-                    labels += [label] * per_tile
-            else:
-                feats.append(model(x).cpu().numpy())
-                labels += [label for _, label in chunk]
+            feats.append(model(x).cpu().numpy())
+            labels += [label for _, label in chunk]
             done = i + len(chunk)
             if done % (batch_size * 20) == 0:
                 rate = done / (time.perf_counter() - start)
@@ -108,8 +81,7 @@ def main() -> int:
     device = dino.pick_device()
     print(f"device: {device}")
     model = dino.load_backbone()
-    mode = "fine" if args.fine else "general"
-    print(f"loaded dinov3_vits16 in {mode} mode")
+    print("loaded dinov3_vits16")
 
     items = gather(
         Path(__file__).resolve().parents[1] / "datasets/kaggle",
@@ -118,7 +90,6 @@ def main() -> int:
 
     feats, labels = extract_features(
         items, model, device, args.batch,
-        patch=args.fine, per_tile=args.patches_per_tile,
     )
     print(f"features: {feats.shape}")
 
@@ -135,7 +106,7 @@ def main() -> int:
     print(f"validation accuracy: {acc_val:.4f} "
           f"({len(y_val)} samples)")
 
-    out = dino.PROBE_FINE if args.fine else dino.PROBE
+    out = dino.PROBE
     out.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(probe, out)
     print(f"saved probe: {out}")
@@ -143,4 +114,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
