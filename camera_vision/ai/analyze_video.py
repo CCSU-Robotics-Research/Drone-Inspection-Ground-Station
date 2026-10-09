@@ -1,4 +1,4 @@
-"""Annotate a recorded video for crack detectino.
+"""Annotate a recorded video with the crack probe.
 
 Runs ``DinoCrackDetector`` on every Nth frame of a video,
 draws the most recent detections on every frame, and writes
@@ -7,8 +7,8 @@ an annotated copy plus a per-analysis JSON summary.
 To avoid calculating manual directory paths,
 Usage::
 
-    python -m ai.analyze_video <path>.avi
-    python -m ai.analyze_video <path>.avi --stride 10 --limit 300
+    python -m ai.analyze_video recordings\\<video-name>.avi
+    python -m ai.analyze_video <video>.mp4 --fine --frame-interval 10
 """
 
 import argparse
@@ -29,8 +29,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("video", help="input video file")
     parser.add_argument(
-        "--stride", type=int, default=5,
-        help="sample every Nth frame for analysis. Default 5",
+        "--frame-interval", type=int, default=5,
+        help="Analyze every Nth frame. Default 5",
+    )
+    parser.add_argument(
+        "--fine", action="store_true",
+        help="enable fine 16 px heatmap"
     )
     parser.add_argument(
         "--limit", type=int, default=None,
@@ -50,7 +54,7 @@ def main() -> int:
     out_path = src.with_name(src.stem + "_annotated.avi")
     json_path = out_path.with_suffix(".json")
 
-    detector = dino.DinoCrackDetector()
+    detector = dino.DinoCrackDetector(fine=args.fine)
     print(f"device: {detector.device}")
 
     cap = cv2.VideoCapture(str(src))
@@ -74,7 +78,7 @@ def main() -> int:
         ok, frame = cap.read()
         if not ok:
             break
-        if index % args.stride == 0:
+        if index % args.frame_interval == 0:
             detections = detector.analyze(frame)
             heat = detections.heatmap
             records.append({
