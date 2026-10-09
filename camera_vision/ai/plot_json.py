@@ -10,6 +10,7 @@ Usage::
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import matplotlib
@@ -23,6 +24,10 @@ def parse_args() -> argparse.Namespace:
         description="Plot a graph with JSON data"
     )
     parser.add_argument("json_path", help="the _annotated.json")
+    parser.add_argument(
+        "--title", default=None,
+        help="chart title, default is video name",
+    )
     return parser.parse_args()
 
 
@@ -50,11 +55,23 @@ def main() -> int:
 
     peak = frames[mean.index(max(mean))]
     ax1.axvline(peak, color="gray", linestyle="--", linewidth=1)
-    ax1.set_title(f"{src.stem} - peak heat_mean "
-                  f"{max(mean):.3f} at frame {peak}")
+    ax1.set_title(args.title if args.title else src.stem)
+    ax1.text(
+        0.02, 0.95,
+        f"peak heat_mean {max(mean):.3f} at frame {peak}",
+        transform=ax1.transAxes,
+        va="top", fontsize=9,
+        bbox=dict(boxstyle="round", facecolor="white",
+                  edgecolor="#534AB7", alpha=0.8),
+    )
+
     fig.tight_layout()
 
     out = src.with_name(src.stem + "_plot.png")
+    if args.title:
+        temp = re.sub(r"[^\w-]+", "_", args.title).strip("_").lower()
+        out = src.with_name(f"{temp}_plot.png")
+
     fig.savefig(out, dpi=110)
     print(f"wrote {out}")
     return 0
