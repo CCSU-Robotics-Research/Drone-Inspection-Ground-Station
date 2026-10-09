@@ -7,8 +7,8 @@ an annotated copy plus a per-analysis JSON summary.
 To avoid calculating manual directory paths,
 Usage::
 
-    python -m ai.analyze_video recordings\\<video-name>.avi
-    python -m ai.analyze_video <video>.mp4 --fine --frame-interval 10
+    python -m ai.analyze_video recordings\\video.avi
+    python -m ai.analyze_video video.mp4 --frame-interval 10
 """
 
 import argparse
@@ -35,10 +35,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--fine", action="store_true",
         help="enable fine 16 px heatmap"
-    )
-    parser.add_argument(
-        "--limit", type=int, default=None,
-        help="stop after N frames"
     )
     parser.add_argument("--heat-threshold", type=float,
                         default=0.5)
@@ -97,8 +93,6 @@ def main() -> int:
         if index % 100 == 0:
             rate = index / (time.perf_counter() - start)
             print(f"  {index} frames, {rate:.1f} fps")
-        if args.limit and index >= args.limit:
-            break
 
     cap.release()
     writer.release()
