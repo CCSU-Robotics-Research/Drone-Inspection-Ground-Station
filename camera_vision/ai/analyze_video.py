@@ -4,11 +4,11 @@ Runs ``DinoCrackDetector`` on every Nth frame of a video,
 draws the most recent detections on every frame, and writes
 an annotated copy plus a per-analysis JSON summary.
 
-To avoid calculating manual directory paths,
 Usage::
 
     python -m ai.analyze_video recordings\\video.avi
     python -m ai.analyze_video video.mp4 --frame-interval 10
+    python -m ai.analyze_video video.mp4 --detector yolo
 """
 
 import argparse
@@ -21,24 +21,29 @@ import cv2
 
 from ai import annotate, dino
 from ai.detect import Detections
-
+frmo ai.yolo import YoloDetector
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Annotate a video with crack detections."
+        description="Annotate a video with defect detections."
     )
     parser.add_argument("video", help="input video file")
     parser.add_argument(
         "--frame-interval", type=int, default=5,
         help="Analyze every Nth frame. Default 5",
     )
-    parser.add_argument(
-        "--fine", action="store_true",
-        help="enable fine 16 px heatmap"
-    )
     parser.add_argument("--heat-threshold", type=float,
                         default=0.5)
+    parser.add_argument(
+        "--detector", choices=("probe", "yolo"),
+        default="probe",
+        help="probe is DINOv3 crack heatmap, yolo is labeled boxes",
+    )
     return parser.parse_args()
+
+Path(__file__).resolve().parents[1]
+        / "models"
+        / "dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
 
 
 def main() -> int:
@@ -50,8 +55,15 @@ def main() -> int:
     out_path = src.with_name(src.stem + "_annotated.avi")
     json_path = out_path.with_suffix(".json")
 
-    detector = dino.DinoCrackDetector(fine=args.fine)
-    print(f"device: {detector.device}")
+    if args.detector == "yolo":
+        detector = YoloDetector(
+            Path(__file__).resolve().parents[1]
+            / "models"
+            / "yolo11n.pt"
+        )
+    else:
+        detector = dino.DinoCrackDetector()
+    print(f"detector: {args.detector}")
 
     cap = cv2.VideoCapture(str(src))
     if not cap.isOpened():
@@ -76,15 +88,27 @@ def main() -> int:
             break
         if index % args.frame_interval == 0:
             detections = detector.analyze(frame)
+            record = {"frame": index}
             heat = detections.heatmap
-            records.append({
-                "frame": index,
-                "heat_max": round(float(heat.max()), 4),
-                "heat_mean": round(float(heat.mean()), 4),
-                "tiles_above_threshold": int(
+
+            if heat is not None:
+                record["heat_max"] = round(float(heat.max()), 4)
+                record["heat_mean"] = round(float(heat.mean()), 4)
+                record["tiles_above_threshold"] = int(
                     (heat >= args.heat_threshold).sum()
-                ),
-            })
+                )
+
+            if detections.boxes:
+                record["boxes"] = [
+                    {"label": lab, "score": round(sc, 3),
+                     "xyxy": list(box)}
+                    for box, lab, sc in zip(
+                        detections.boxes, detections.labels,
+                        detections.scores,
+                    )
+                ]
+            records.append(record)
+
         writer.write(annotate.draw(
             frame, detections,
             heat_threshold=args.heat_threshold,
