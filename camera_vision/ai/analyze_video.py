@@ -36,11 +36,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--heat-threshold", type=float,
                         default=0.5)
-    parser.add_argument(
-        "--detector", choices=("probe", "yolo"),
-        default="probe",
-        help="probe is DINOv3 crack heatmap, yolo is labeled boxes",
-    )
     return parser.parse_args()
 
 
@@ -53,15 +48,10 @@ def main() -> int:
     out_path = src.with_name(src.stem + "_annotated.avi")
     json_path = out_path.with_suffix(".json")
 
-    if args.detector == "yolo":
-        detector = YoloDetector(
-            Path(__file__).resolve().parents[1]
-            / "models"
-            / "yolo_codebrim.pt"
-        )
-    else:
-        detector = dino.DinoCrackDetector()
-    print(f"detector: {args.detector}")
+    probe = DinoDefectDetector()
+    yolo = YoloDetector(
+        Path(__file__).resolve().parents[1] / "models" / "yolo_codebrim.pt"
+    )
 
     cap = cv2.VideoCapture(str(src))
     if not cap.isOpened():
@@ -85,7 +75,8 @@ def main() -> int:
         if not ok:
             break
         if index % args.frame_interval == 0:
-            detections = detector.analyze(frame)
+            detections = fuse(probe.analyze(frame), yolo.analyze(frame),
+                              frame.shape[:2], args.heat_threshold)
             record = {"frame": index}
             heat = detections.heatmap
 
