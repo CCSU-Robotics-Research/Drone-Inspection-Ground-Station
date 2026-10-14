@@ -56,7 +56,7 @@ def main() -> int:
         detector = YoloDetector(
             Path(__file__).resolve().parents[1]
             / "models"
-            / "yolo11n.pt"
+            / "yolo_codebrim.pt"
         )
     else:
         detector = dino.DinoCrackDetector()
