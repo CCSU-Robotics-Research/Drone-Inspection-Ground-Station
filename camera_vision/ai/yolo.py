@@ -3,7 +3,6 @@
 import numpy as np
 
 from ai.detect import Detections
-from ultralytics import YOLO
 
 
 def _to_detections(xyxy, class_ids, scores, names) -> Detections:
@@ -20,6 +19,7 @@ def _to_detections(xyxy, class_ids, scores, names) -> Detections:
 class YoloDetector:
 
     def __init__(self, model_path: str = "yolo11n.pt"):
+        from ultralytics import YOLO
         self.model = YOLO(model_path)
 
     def analyze(self, frame: np.ndarray) -> Detections:
