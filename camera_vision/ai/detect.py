@@ -5,6 +5,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, Protocol, Tuple
 
+import cv2
 import numpy as np
 
 # One instance detection box. [x1, y1, x2, y2] pixel coordinates
@@ -40,3 +41,22 @@ class Detector(Protocol):
 
     def analyze(self, frame: np.ndarray) -> Detections:
         ...
+
+
+def fuse(heat: Detections, boxes: Detections, size,
+         threshold: float = 0.5) -> Detections:
+    """Combine DINO's heatmap with YOLO's boxes. A box is kept
+    only if DINO's heat reaches a threshold inside the box."""
+    grid = cv2.resize(heat.heatmap.astype(np.float32),
+                      (size[1], size[0]),
+                      interpolation=cv2.INTER_LINEAR)
+    kept = Detections(heatmap=heat.heatmap)
+    for box, label, score in zip(boxes.boxes, boxes.labels,
+                                 boxes.scores):
+        x1, y1, x2, y2 = (max(0, v) for v in box)
+        inside = grid[y1:y2, x1:x2]
+        if inside.size and inside.max() >= threshold:
+            kept.boxes.append(box)
+            kept.labels.append(label)
+            kept.scores.append(score)
+    return kept

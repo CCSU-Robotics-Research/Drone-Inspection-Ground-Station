@@ -23,7 +23,7 @@ class YoloDetector:
         self.model = YOLO(model_path)
 
     def analyze(self, frame: np.ndarray) -> Detections:
-        result = self.model(frame, conf=0.4, iou=0.3, verbose=False)[0]
+        result = self.model(frame, iou=0.3, verbose=False)[0]
         found = result.boxes
         if found is None or len(found) == 0:
             return Detections()
