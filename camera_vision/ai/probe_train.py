@@ -32,7 +32,6 @@ from sklearn.multiclass import OneVsRestClassifier
 
 DEFECTS = ("Crack", "Spallation", "Efflorescence", "ExposedBars",
            "CorrosionStain")
-DATASETS = Path(__file__).resolve().parents[1] / "datasets"
 
 
 def parse_args() -> argparse.Namespace:
@@ -60,7 +59,7 @@ def codebrim_items() -> list:
         / "datasets" / "codebrim" / "original_dataset"
     )
     images = {p.stem: p for p in (data / "images").iterdir()}
-    itmes = []
+    items = []
     for xml_path in sorted((data / "annotations").glob("*.xml")):
         image = images.get(xml_path.stem)
         if image is None:
@@ -72,7 +71,7 @@ def codebrim_items() -> list:
     return items
 
 
-def load(path: Path, box, cache: dictO):
+def load(path: Path, box, cache: dict):
     """Image (or the box cut out of it); None if unreadable"""
 
     if cache.get("path") != path:
@@ -141,7 +140,7 @@ def main() -> int:
         feats, labels, test_size=0.2, random_state=0,
     )
     probe = OneVsRestClassifier(LogisticRegression(max_iter=2000))
-    probefit(x_tr, y_tr)
+    probe.fit(x_tr, y_tr)
     print(f"validation F1 per defect:")
     scores = f1_score(y_val, probe.predict(x_val), average=None,
                       zero_division=0)
@@ -149,7 +148,7 @@ def main() -> int:
         print(f"  {name}: {score:.4f}")
 
     out = dino.PROBE
-    out.parent.mkdir(parents=True, exists_ok=True)
+    out.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(probe, out)
     print(f"saved probe: {out}")
     return 0

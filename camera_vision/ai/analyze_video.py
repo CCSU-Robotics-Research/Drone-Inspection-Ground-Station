@@ -21,7 +21,7 @@ import cv2
 
 from ai import annotate, dino
 from ai.detect import Detections
-frmo ai.yolo import YoloDetector
+from ai.yolo import YoloDetector
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -40,10 +40,6 @@ def parse_args() -> argparse.Namespace:
         help="probe is DINOv3 crack heatmap, yolo is labeled boxes",
     )
     return parser.parse_args()
-
-Path(__file__).resolve().parents[1]
-        / "models"
-        / "dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
 
 
 def main() -> int:

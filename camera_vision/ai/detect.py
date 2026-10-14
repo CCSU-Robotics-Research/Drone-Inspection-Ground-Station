@@ -31,7 +31,7 @@ class Detections:
             len(self.boxes) == len(self.labels) == len(self.scores)
         ):
             raise ValueError(
-                "boxes, labels, and sores must be same length"
+                "boxes, labels, and scores must be same length"
             )
 
 

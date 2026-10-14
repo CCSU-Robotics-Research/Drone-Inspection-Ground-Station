@@ -16,7 +16,6 @@ to add bounding boxes.
 
 from importlib import import_module
 from pathlib import Path
-import sys
 
 import cv2
 import joblib
@@ -118,15 +117,13 @@ class DinoCrackDetector:
     def __init__(self, batch_size: int = 64):
         self.device = pick_device()
         self.model = load_backbone()
-        self.fine = fine
-        self.probe = joblib.load(PROBE_FINE if fine else PROBE)
+        self.probe = joblib.load(PROBE)
         self.batch_size = batch_size
 
     def analyze(self, frame: np.ndarray) -> Detections:
         h, w = frame.shape[:2]
-        stride = TILE if self.fine else STRIDE
-        ys = tile_starts(h, TILE, stride)
-        xs = tile_starts(w, TILE, stride)
+        ys = tile_starts(h)
+        xs = tile_starts(w)
         tiles = [frame[y:y + TILE, x:x + TILE]
                  for y in ys for x in xs]
 
