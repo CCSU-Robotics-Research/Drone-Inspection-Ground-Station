@@ -23,6 +23,7 @@ from ai import annotate, dino
 from ai.detect import Detections
 from ai.yolo import YoloDetector
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Annotate a video with defect detections."
