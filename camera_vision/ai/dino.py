@@ -111,8 +111,8 @@ def tile_starts(
     return starts
 
 
-class DinoCrackDetector:
-    """DINOv3 features + trained crack probe."""
+class DinoDefectDetector:
+    """DINOv3 features + trained defect probe."""
 
     def __init__(self, batch_size: int = 64):
         self.device = pick_device()

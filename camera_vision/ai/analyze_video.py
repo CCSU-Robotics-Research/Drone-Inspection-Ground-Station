@@ -1,6 +1,6 @@
 """Annotate a recorded video with the crack probe.
 
-Runs ``DinoCrackDetector`` on every Nth frame of a video,
+Runs ``DinoDefectDetector`` on every Nth frame of a video,
 draws the most recent detections on every frame, and writes
 an annotated copy plus a per-analysis JSON summary.
 
@@ -19,8 +19,9 @@ from pathlib import Path
 
 import cv2
 
-from ai import annotate, dino
-from ai.detect import Detections
+from ai import annotate
+from ai.dino import DinoDefectDetector
+from ai.detect import Detections, fuse
 from ai.yolo import YoloDetector
 
 
