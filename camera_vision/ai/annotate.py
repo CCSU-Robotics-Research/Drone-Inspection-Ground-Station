@@ -15,8 +15,14 @@ import numpy as np
 
 from ai.detect import Detections
 
-_BOX_COLOR = (0, 165, 255)
-_HEAT_COLOR = (0, 0, 255)
+# Per-defect box colors, unknown labels resort to default
+_CLASS_COLORS = {
+    "crack": (0, 165, 255),
+    "spallation": (255, 140, 0),
+    "efflorescence": (60, 190, 60),
+    "exposedbars": (0, 0, 230),
+    "corrosionstain": (200, 0, 200),
+}
 
 
 def draw(
@@ -32,7 +38,7 @@ def draw(
     is tinted. ``heat_alpha`` is the tint strength. The input
     frame is never modified.
     """
-    result = frame.copy()  # Will be annotated and returned at end
+    result = frame.copy()
     if detections.heatmap is not None:
         result = _draw_heatmap(
             result, detections.heatmap, heat_threshold, heat_alpha
@@ -40,7 +46,7 @@ def draw(
     for box, label, score in zip(
         detections.boxes, detections.labels, detections.scores
     ):
-        _draw_box(result, box, f"{label} {score:.2f}")
+        _draw_box(result, box, label, score)
     return result
 
 
@@ -59,18 +65,25 @@ def _draw_heatmap(
     if not mask.any():
         return result
     tinted = result.copy()
-    tinted[mask] = _HEAT_COLOR
+    tinted[mask] = (0, 0, 255)  # red color
     return cv2.addWeighted(result, 1.0 - alpha, tinted, alpha, 0)
 
 
-def _draw_box(img: np.ndarray, box, text: str) -> None:
+def _draw_box(img: np.ndarray, box, label: str,
+              score: float) -> None:
     x1, y1, x2, y2 = (int(v) for v in box)
+
+    # Get the appropriate box color per defect, or default
+    color = _CLASS_COLORS.get(
+        "".join(c for c in label.lower() if c.isalpha()),
+        (0, 165, 255)  # amber color
+    )
+
+    text = f"{label} {score:.2f}"
     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), 4)
-    cv2.rectangle(img, (x1, y1), (x2, y2), _BOX_COLOR, 2)
+    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
     text_at = (x1, max(y1 - 8, 14))
-    cv2.putText(
-        img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 4
-    )
-    cv2.putText(
-        img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX, 0.6, _BOX_COLOR, 2
-    )
+    cv2.putText(img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX,
+                0.6, (0, 0, 0), 4)
+    cv2.putText(img, text, text_at, cv2.FONT_HERSHEY_SIMPLEX,
+                0.6, color, 2)
