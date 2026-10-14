@@ -86,3 +86,18 @@ class TestDraw:
             scores=[0.8], heatmap=heat))
         assert out[3, 3, 2] > 150
         assert tuple(out[30, 50]) == (0, 165, 255)
+
+
+class TestYOLOClassColors:
+
+    def test_known_class_color(self):
+        out = draw(black_frame(), Detections(
+            boxes=[(10, 20, 40, 40)], labels=["Spallation"],
+            scores=[0.9]))
+        assert tuple(out[20, 25]) == (255, 140, 0)
+
+    def test_unknown_class_defaults(self):
+        out = draw(black_frame(), Detections(
+            boxes=[(10, 20, 40, 40)], labels=["mystery"],
+            scores=[0.9]))
+        assert tuple(out[20, 25]) == (0, 165, 255)
