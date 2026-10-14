@@ -136,7 +136,9 @@ class DinoCrackDetector:
                 x = preprocess(tiles[i:i + self.batch_size],
                                self.device)
                 feats = self.model(x).cpu().numpy()
-                scores.append(self.probe.predict_proba(feats)[:, 1])
+                scores.append(
+                    self.probe.predict_proba(feats).max(axis=1)
+                )
 
         heat = np.concatenate(scores).astype(np.float32)
         heat = heat.reshape(len(ys), len(xs))
