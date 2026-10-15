@@ -46,10 +46,10 @@ class TestDraw:
         assert np.array_equal(out, frame)
 
     def test_box_perimeter(self):
-        out = draw(black_frame(), Detections(
-            boxes=[(10, 20, 40, 40)], labels=["d"], scores=[0.9]))
-        assert tuple(out[20, 25]) == (0, 165, 255)
-        assert tuple(out[30, 25]) == (0, 0, 0)
+        out = draw(np.zeros((120, 64, 3), dtype=np.uint8), Detections(
+            boxes=[(10, 60, 40, 100)], labels=["d"], scores=[0.9]))
+        assert tuple(out[100, 25]) == (0, 165, 255)
+        assert tuple(out[80, 25]) == (0, 0, 0)
 
     def test_label_renders_above_box(self):
         out = draw(black_frame(), Detections(
