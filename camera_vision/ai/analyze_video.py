@@ -23,6 +23,7 @@ from ai import annotate
 from ai.dino import DinoDefectDetector
 from ai.detect import Detections, fuse
 from ai.yolo import YoloDetector
+from datetime import datetime
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,7 +46,7 @@ def main() -> int:
     if not src.exists():
         print(f"missing video: {src}")
         return 1
-    out_path = src.with_name(src.stem + "_annotated.avi")
+    out_path = src.with_name(f"{src.stem}_{datetime.now():%Y%m%d_%H%M%S}.avi")
     json_path = out_path.with_suffix(".json")
 
     probe = DinoDefectDetector()
