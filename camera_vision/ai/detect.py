@@ -45,8 +45,8 @@ class Detector(Protocol):
 
 def fuse(heat: Detections, boxes: Detections, size,
          threshold: float = 0.5) -> Detections:
-    """Combine DINO's heatmap with YOLO's boxes. A box is kept
-    only if DINO's heat reaches a threshold inside the box."""
+    """Combine DINO's heatmap with YOLO's boxes, contingent upon
+    if DINO's heatmap reaches a threshold inside a box."""
     grid = cv2.resize(heat.heatmap.astype(np.float32),
                       (size[1], size[0]),
                       interpolation=cv2.INTER_LINEAR)
