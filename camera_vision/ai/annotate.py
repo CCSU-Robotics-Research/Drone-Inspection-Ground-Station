@@ -25,13 +25,9 @@ _CLASS_COLORS = {
 }
 
 
-def draw(
-    frame: np.ndarray,
-    detections: Detections,
-    *,
-    heat_threshold: float = 0.5,
-    heat_alpha: float = 0.45,
-) -> np.ndarray:
+def draw(frame: np.ndarray, detections: Detections, *,
+         heat_threshold: float = 0.5,
+         heat_alpha: float = 0.45) -> np.ndarray:
     """Return a copy of ``frame`` with ``detections`` annotated.
 
     ``heat_threshold`` is the heatmap value above which a pixel
@@ -54,7 +50,7 @@ def draw(
                                      tinted, heat_alpha, 0)
 
     # YOLO boxes
-    fint = cv2.FONT_HERSHEY_SIMPLEX
+    font = cv2.FONT_HERSHEY_SIMPLEX
     for box, label, score in zip(
         detections.boxes, detections.labels, detections.scores
     ):
@@ -64,7 +60,7 @@ def draw(
             (0, 165, 255)  # default amber color
         )
         cv2.rectangle(result, (x1, y1), (x2, y2), (0, 0, 0), 6)
-        cv2.rectnagle(result, (x1, y1), (x2, y2), color, 3)
+        cv2.rectangle(result, (x1, y1), (x2, y2), color, 3)
 
         text = f"{label} {score:.2f}"
         (tw, th), base = cv2.getTextSize(text, font, 1.0, 2)
