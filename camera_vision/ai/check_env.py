@@ -101,5 +101,6 @@ def main() -> int:
         print(f"YOLO OK, {elapsed / 10 * 1000:.1f} ms per 720p frame")
     return 0
 
+
 if __name__ == "__main__":
     sys.exit(main())
