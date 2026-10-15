@@ -7,6 +7,8 @@ reports inference time.
 Make sure the DINOv3 repository is cloned adjacent to this repository
 and the "dinov3_vits16_pretrain_lvd1689m-08c60483.pth" weight file is
 located in the models/ subdirectory within camera_vision/.
+
+Make sure the DINOv3 probe and YOLO models are trained and ready.
 """
 
 import numpy as np
