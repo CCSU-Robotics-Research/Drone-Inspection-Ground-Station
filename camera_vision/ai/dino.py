@@ -1,4 +1,4 @@
-"""DINOv3 backbone and the crack-probe detector.
+"""DINOv3 backbone and the defect-probe detector.
 
 Loads the DINOv3 backbone module from a local clone, plus
 the LVD-1689M normalization baked into preprocessing.
@@ -7,11 +7,6 @@ the LVD-1689M normalization baked into preprocessing.
 sliding a 224 px window over the frame, scoring each tile with
 the trained probe, and returns the scores as a coarse heatmap that
 ``ai.annotate`` upscales.
-
-The backbone exposes 2 feature levels. ``model(x)`` returns one
-summary vector per tile. ``patch_tokens`` returns one vector per
-16 px patch (aka 196 per tile), which will be important for YOLO
-to add bounding boxes.
 """
 
 from importlib import import_module
@@ -32,8 +27,6 @@ PROBE = (
 
 TILE = 224
 STRIDE = 112
-PATCH = 16
-PATCHES = TILE // PATCH
 
 
 def pick_device() -> "torch.device":
@@ -73,28 +66,6 @@ def preprocess(images_bgr, device) -> "torch.Tensor":
     std = torch.tensor((0.229, 0.224, 0.225),
                        device=device).view(1, 3, 1, 1)
     return (x - mean) / std
-
-
-def patch_tokens(model, x) -> "torch.Tensor":
-    """Per patch features (batch, 196, 384) for 224 px input.
-    Will be used for detection head outputs later.
-    """
-    return model.forward_features(x)["x_norm_patchtokens"]
-
-
-def assemble(
-    blocks: np.ndarray,
-    rows: int,
-    cols: int
-) -> np.ndarray:
-    """Stitch (rows*cols, P, P) blocks into one (rows*P, cols*P)
-    grid, row-major order, matching tile order from analyze().
-    Will be used for detection head outputs later.
-    """
-    p = blocks.shape[1]
-    grid = blocks.reshape(rows, cols, p, p)
-    grid = grid.transpose(0, 2, 1, 3)
-    return grid.reshape(rows * p, cols * p)
 
 
 def tile_starts(

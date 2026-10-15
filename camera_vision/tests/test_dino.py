@@ -1,6 +1,5 @@
 """Tests for the tiling math in DINO detector."""
 
-import numpy as np
 import pytest
 
 torch = pytest.importorskip("torch")
@@ -8,7 +7,6 @@ torch = pytest.importorskip("torch")
 from ai.dino import (  # noqa: E402
     STRIDE,
     TILE,
-    assemble,
     tile_starts,
 )
 
@@ -33,13 +31,3 @@ class TestTileStarts:
     def test_720p_grid_shape(self):
         assert len(tile_starts(720)) == 6
         assert len(tile_starts(1280)) == 11
-
-
-class TestAssemble:
-
-    def test_blocks_stitch_row_major(self):
-        blocks = np.arange(16, dtype=np.float32).reshape(4, 2, 2)
-        grid = assemble(blocks, 2, 2)
-        assert grid.shape == (4, 4)
-        assert grid[0, 0] == 0 and grid[0, 2] == 4
-        assert grid[2, 0] == 8 and grid[3, 3] == 15
