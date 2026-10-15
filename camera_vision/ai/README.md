@@ -16,8 +16,7 @@ The install is shared with camera_vision.
 * [yolo.py](yolo.py) - Houses ``YoloDetector``, which wraps an Ultralytics YOLO model.
 * [probe_train.py](probe_train.py) - Trains the custom DINOv3 probe.
 * [yolo_train.py](yolo_train.py) - Trains the YOLO model.
-* [analyze_video.py](analyze_video.py) - Analyzes and annotates a recorded video offline, outputs the annotated video and a JSON file of detected defects that can be plotted.
-* [plot_json.py](plot_json.py) - Charts the JSON output of `analyze_video` with `seaborn` and `matplotlib`.
+* [analyze_video.py](analyze_video.py) - Analyzes and annotates a recorded video offline, outputs the annotated video.
 * [check_env.py](check_env.py) - Verifies `torch`, the GPU, and DINOv3 loading on the machine.
 
 ## Setup
@@ -55,9 +54,6 @@ Once the datasets are ready, you can train your models.
 * `python -m ai.analyze_video recordings\clip.MOV` - Runs both models and merges their annotations (DINOv3's heatmap and YOLO's boxes), then outputs an annotated video file.
 * `--frame-interval` sets the sampling rate of frames for analysis. The default is 5, so that means 6 frames will be analyzed every second of a 30 FPS video. Frames in between show the most recent result. This is for computation power and readability purposes.
 * `--heat-threshold` sets how confident DINOv3 must be before a tile is drawn red. It' salso the bar a YOLO box's confidence must meet for it to be shown. Default is 0.5
-* `--python -m ai.plot_json recordings\clip_annotated.json --title "Title"` - Charts `heat_mean` and `tiles_above_threshold` over the video, saved as a PNG beside the JSON. Uses `seaborn` and `matplotlib`.
-
-Each JSON record holds the `frame`, `heat_max`, `heat_mean`, `tiles_above_threshold`, and `boxes` (each with `label`, `score`, and `xyx` pixel coordinates).
 
 ## Datasets and Credits
 
