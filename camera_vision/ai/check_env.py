@@ -60,23 +60,24 @@ def main() -> int:
     print(f"{elapsed / 10 * 1000:.1f} ms per 224x224 pass, 10 passes")
 
     models = Path(__file__).resolve().parents[1] / "models"
-    for name in (dino.PROBE.name, "yolo_codebrim.pt"):
+    for name in (dino.PROBE.name, yolo.MODEL.name):
         found = (models / name).exists()
 
     # DINOv3 probe and YOLO model verification
 
     models = Path(__file__).resolve().parents[1] / "models"
-    for name in (dino.PROBE.name, "yolo_codebrim.pt"):
+    for name in (dino.PROBE.name, yolo.MODEL.name):
         found = (models / name).exists()
         print(f"{name}: {'found' if found else 'not trained yet'}")
 
     try:
         from ultralytics import YOLO
+        from ai import yolo
     except ImportError:
         print('ultralytics is not installed, run pip install -e ".[dev,ai]"')
         return 1
-    if (models / "yolo_codebrim.pt").exists():
-        yolo = YOLO(str(models / "yolo_codebrim.pt"))
+    if (models / yolo.MODEL).exists():
+        yolo = YOLO(str(models / yolo.MODEL.name))
         frame = np.zeros((720, 1280, 3), np.uint8)
         yolo(frame, verbose=False)
         start = time.perf_counter()

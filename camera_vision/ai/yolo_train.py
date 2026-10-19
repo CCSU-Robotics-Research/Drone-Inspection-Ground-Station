@@ -1,5 +1,6 @@
 """Train YOLO on CODEBRIM's 5 defect types."""
 
+import argparse
 import random
 import shutil
 import xml.etree.ElementTree as ET
@@ -78,13 +79,19 @@ def prepare() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Train YOLO on CODEBRIM.")
+    parser.add_argument("--size", choices=("n", "s", "m", "l", "x"),
+                        default="n")
+    size = parser.parse_args().size
+
     if not (DATA / "data.yaml").exists():
         prepare()
-    model = YOLO(str(MODELS / "yolo11n.pt"))
+    model = YOLO(str(MODELS / f"yolo11{size}.pt"))
     model.train(data=str(DATA / "data.yaml"), epochs=100, imgsz=1024,
-                project=str(MODELS / "yolo_runs"), name="codebrim")
-    shutil.copy(model.trainer.best, MODELS / "yolo_codebrim.pt")
-    print(f"saved {MODELS / 'yolo_codebrim.pt'}")
+                batch=-1, patience=20,
+                project=str(MODELS / "yolo_runs"), name=f"codebrim_{size}")
+    shutil.copy(model.trainer.best, MODELS / f"yolo_codebrim_{size}.pt")
+    print(f"saved {MODELS / f'yolo_codebrim_{size}.pt'}")
 
 
 if __name__ == "__main__":
