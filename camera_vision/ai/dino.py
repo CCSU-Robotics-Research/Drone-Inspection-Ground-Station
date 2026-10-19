@@ -20,13 +20,15 @@ import torch
 
 from ai.detect import Detections
 
-# Constants for repeated use or in other files
-PROBE = (
-    Path(__file__).resolve().parents[1] / "models" / "probe.joblib"
-)
-
 TILE = 224
 STRIDE = 112
+
+# Model constants for repeated use or in other files. Choose from
+# dinov3_vits16, dinv3_vits16plus, dinov3_vitb16 dinov3_vitl16,
+# dinov3_vith16plus
+BACKBONE = "dinov3_vits16"
+MODELS = Path(__file__).resolve().parents[1] / "models"
+PROBE = MODELS / f"probe_{BACKBONE}.joblib"
 
 
 def pick_device() -> "torch.device":
@@ -36,18 +38,15 @@ def pick_device() -> "torch.device":
 
 
 def load_backbone():
-    """Load DINOv3 ViT-S/16 backbone in eval mode."""
+    """Load the specified DINOv3 backbone in eval mode."""
     repo = Path(__file__).resolve().parents[3] / "dinov3"
-    weights = (
-        Path(__file__).resolve().parents[1]
-        / "models"
-        / "dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
-    )
-    device = pick_device()
+    weights = next(MODELS.glob(f"{BACKBONE}_pretrain_lvd1689-*.pth"), None)
+    if weights is None:
+        raise FileNotFoundError(f"no {BACKBONE} weights in {MODELS}")
     sys.path.insert(0, str(repo))
-    backbones = import_module("dinov3.hub.backbones")
-    model = getattr(backbones, "dinov3_vits16")(weights=str(weights))
-    return model.to(device).eval()
+    backbones = import_module("dinov3hub.backbones")
+    model = getattr(backbones, BACKBONE)(weights=str(weights))
+    return model.to(pick_device()).eval()
 
 
 def preprocess(images_bgr, device) -> "torch.Tensor":
