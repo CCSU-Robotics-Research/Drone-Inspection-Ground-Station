@@ -26,7 +26,7 @@ STRIDE = 112
 # Model constants for repeated use or in other files. Choose from
 # dinov3_vits16, dinv3_vits16plus, dinov3_vitb16 dinov3_vitl16,
 # dinov3_vith16plus
-BACKBONE = "dinov3_vits16"
+BACKBONE = "dinov3_vith16plus"
 MODELS = Path(__file__).resolve().parents[1] / "models"
 PROBE = MODELS / f"probe_{BACKBONE}.joblib"
 
