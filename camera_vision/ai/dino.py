@@ -40,11 +40,11 @@ def pick_device() -> "torch.device":
 def load_backbone():
     """Load the specified DINOv3 backbone in eval mode."""
     repo = Path(__file__).resolve().parents[3] / "dinov3"
-    weights = next(MODELS.glob(f"{BACKBONE}_pretrain_lvd1689-*.pth"), None)
+    weights = next(MODELS.glob(f"{BACKBONE}_pretrain_lvd1689m-*.pth"), None)
     if weights is None:
         raise FileNotFoundError(f"no {BACKBONE} weights in {MODELS}")
     sys.path.insert(0, str(repo))
-    backbones = import_module("dinov3hub.backbones")
+    backbones = import_module("dinov3.hub.backbones")
     model = getattr(backbones, BACKBONE)(weights=str(weights))
     return model.to(pick_device()).eval()
 

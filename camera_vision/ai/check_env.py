@@ -60,7 +60,7 @@ def main() -> int:
     print(f"{elapsed / 10 * 1000:.1f} ms per 224x224 pass, 10 passes")
 
     models = Path(__file__).resolve().parents[1] / "models"
-    for name in (dino.PROB.name, "yolo_codebrim.pt"):
+    for name in (dino.PROBE.name, "yolo_codebrim.pt"):
         found = (models / name).exists()
 
     # DINOv3 probe and YOLO model verification
