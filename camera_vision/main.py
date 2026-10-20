@@ -134,6 +134,11 @@ def run(device, stream_enabled: bool, record_on_start: bool,
     source.open()
     recorder = VideoRecorder()
 
+    # Video speed for file inputs
+    frame_period = 1.0 / source.fps if (
+        isinstance(device, str) and source.fps
+    ) else 0.0
+
     streamer = None
     if stream_enabled:
         streamer = FrameStreamer()
@@ -192,9 +197,17 @@ def run(device, stream_enabled: bool, record_on_start: bool,
 
     fps_counter = FpsCounter()
     misses = 0
+    next_frame = time.monotonic()
 
     try:
         while not stop_requested:
+            if frame_period:
+                next_frame += frame_period
+                delay = next_frame - time.monotonic()
+                if delay > 0:
+                    time.sleep(delay)
+                else:
+                    next_frame = time.monotonic()
             frame = source.read()
             if frame is None:
                 misses += 1
