@@ -150,7 +150,7 @@ class TestLiveAnalyzer:
         for value in range(1, 6):
             live.submit(small_frame(value))
             time.sleep(0.01)
-        assert wait_until(labmda: live.latest.boxes != []
+        assert wait_until(lambda: live.latest.boxes != []
                           and live.latest.boxes[0][0] == 5)
         assert len(seel) < 5
         live.stop()
