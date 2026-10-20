@@ -10,7 +10,7 @@ The install is shared with camera_vision.
 
 ## Components
 
-* [detect.py](detect.py) - Includes: the `Detections` class for each frame's output, including boxes, labels, scores, and heatmap; the `Detector` protocol, and `fuse()` to combine DINOv3's heat with YOLO's boxes
+* [detect.py](detect.py) - Includes: the `Detections` class for each frame's output, including boxes, labels, scores, and heatmap; the `Detector` protocol, `fuse()` to combine DINOv3's heat with YOLO's boxes, and `LiveAnalyzer` to run analysis on a background thread for live video.
 * [annotate.py](annotate.py) - Draws the heatmap and boxes onto a frame
 * [dino.py](dino.py) - Loads the backbone for DINOv3. ``DinoDefectDetector`` uses a 224 px window over the frame and scores each tile with the trained probe.
 * [yolo.py](yolo.py) - Houses ``YoloDetector``, which wraps an Ultralytics YOLO model.
@@ -54,6 +54,8 @@ Once the datasets are ready, you can train your models.
 * `python -m ai.analyze_video recordings\clip.MOV` - Runs both models and merges their annotations (DINOv3's heatmap and YOLO's boxes), then outputs an annotated video file.
 * `--frame-interval` sets the sampling rate of frames for analysis. The default is 5, so that means 6 frames will be analyzed every second of a 30 FPS video. Frames in between show the most recent result. This is for computation power and readability purposes.
 * `--heat-threshold` is how much DINOv3's heat must be inside a YOLO box for the box to be kept
+
+For live annotation, note that `camera_vision/main.py` runs DINOv3 S and YOLO s via `LiveAnalyzer`. The video keeps camera speed while the analyzer works on the newest sampled frame. Annotations update as fast as the GPU allows.
 
 ## Datasets and Credits
 

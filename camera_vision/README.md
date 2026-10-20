@@ -33,15 +33,17 @@ python main.py --device clip.mp4    # Play a video
 python main.py --record             # Start recording immediately
 python main.py --no-stream          # Playback only, no Unity stream
 python main.py -v                   # Debug logging
+python main.py --annotate           # Start annotating immediately
 ```
 
 6. To start/stop recording, press `r`. An indicator will show recording in progress.
-7. To quit, press `q` or `Esc`.
-8. For troubleshooting camera behavior, see _Camera Notes_ section below.
+7. To turn live AI annotation on/off, press `a`. The AI models load when the program starts. If they can't load, the camera runs without annotation. For model setup, see [ai/README.md](ai/README.md).
+8. To quit, press `q` or `Esc`.
+9. For troubleshooting camera behavior, see _Camera Notes_ section below.
 
 ## Streaming to Unity
 
-`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. Note the FPS indicator is not visible via HoloLens, but recording indicator is.
+`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. Note the FPS indicator is not visible via HoloLens, but recording indicator is. Annotations appear in both HoloLens stream and the local window. Recordings stay unannotated.
 
 ### Video Transmission Protocol
 
@@ -63,12 +65,12 @@ The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expecte
 * Recordings capture the raw feed from the camera without any annotations or overlays.
 * Files are auto-named `rec_YYYYMMDD_HHMMSS.avi` and can be found in `recordings/`.
 
-### Recording Command Protocol
+### Command Protocol
 
 Things to know about the HoloLens to ground station remote control for video recording; the Unity repo conforms to this:
 
 * `camera_vision` listens for UDP datagrams on `127.0.0.1:5011` for commands from Unity.
-* Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`.
+* Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`, `annotate:on`, `annotate:off`, `annotate:toggle`.
 * Unknown commands are ignored.
 
 ## Camera Notes
