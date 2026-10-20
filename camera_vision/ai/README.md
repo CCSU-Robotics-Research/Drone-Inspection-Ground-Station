@@ -57,8 +57,8 @@ Once the datasets are ready, you can train your models.
 
 ## Datasets and Credits
 
-* Ozgenel, C. F. (2019). *Concrete Crack Images for Classification*. Mendeley Data. Distributed on Kaggle as "Surface Crack Detection".
-* Mundt, M., Majumder, S., Murali, S., Panetsos, P., & Ramesh, V. (2019). Meta-learning Convolutional Neural Architectures for Multi-target Concrete Defect Classification with the COncrete DEfect BRidge IMage Dataset. *CVPR*. Non-commercial research use; see the Zenodo page.
+* Özgenel, Ç.F., Gönenç Sorguç, A. "Performance Comparison of Pretrained Convolutional Neural Networks on Crack Detection in Buildings", ISARC 2018, Berlin. Distributed on Kaggle as "Surface Crack Detection".
+* Mundt, M., Majumder, S., Murali, S., Panetsos, P., & Ramesh, V. (2019). Meta-learning Convolutional Neural Architectures for Multi-target Concrete Defect Classification with the COncrete DEfect BRidge IMage Dataset. *CVPR*. Non-commercial research use.
 * Simeoni, O., et al. (2025). DINOv3. arXiv:2508.10104. Weights under the DINOv3 License.
 * Jocher, G., & Qiu, J. (2024). Ultralytics YOLO11. AGPL-3.0.
 * Lin, T.-Y., et al. (2014). Microsoft COCO: Common Objects in Context. *ECCV*. YOLO's starting weights were trained on COCO.
