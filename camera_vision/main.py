@@ -66,7 +66,7 @@ def _draw_fps(frame, fps: float) -> None:
     )
 
 
-def _start_annotation() -> LiveAnalyzer:
+def _start_annotation():
     """Load the live models and starts background analyzer."""
     _LOG.info("Loading AI models for live annotation...")
     try:
@@ -163,6 +163,7 @@ def run(device, stream_enabled: bool, record_on_start: bool,
         if analyzer is None:
             _LOG.warning("Annotation unavailable since models did not load")
             return
+        annotating = on
         if not on:
             analyzer.clear()
         _LOG.info("Annotation %s", "on" if on else "off")
@@ -183,9 +184,9 @@ def run(device, stream_enabled: bool, record_on_start: bool,
             (source.width, source.height), source.fps
         ),
         "record:stop": recorder.stop,
-        "annotate:toggle": labmda: _set_annotation(not annotating),
+        "annotate:toggle": lambda: _set_annotation(not annotating),
         "annotate:on": lambda: _set_annotation(True),
-        "annotation:off": lambda: _set_annotation(False),
+        "annotate:off": lambda: _set_annotation(False),
     })
     commands.start()
 
