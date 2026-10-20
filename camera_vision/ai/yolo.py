@@ -7,7 +7,7 @@ from pathlib import Path
 from ultralytics import YOLO
 
 # WHich trained YOLO size to use: n, s, m, l, x
-SIZE = "n"
+SIZE = "s"
 MODEL = (
     Path(__file__).resolve().parents[1]
     / "models" / f"yolo_codebrim_{SIZE}.pt"
