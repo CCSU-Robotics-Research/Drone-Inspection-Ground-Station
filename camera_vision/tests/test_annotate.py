@@ -2,9 +2,10 @@
 
 import numpy as np
 import pytest
+import time
 
 from ai.annotate import draw
-from ai.detect import Detections
+from ai.detect import Detections, LiveAnalyzer
 
 _W, _H = 64, 48
 
@@ -15,6 +16,25 @@ def black_frame():
 
 def gray_frame(value=100):
     return np.full((_H, _W, 3), value, dtype=np.uint8)
+
+
+def small_frame(value):
+    return np.full((8, 8, 3), value, dtype=np.uint8)
+
+
+def wait_until(predicate, timeout=0.3):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.01)
+    return False
+
+
+def tagged(value):
+    """Detections that record which frame produced them"""
+    return Detections(boxes=[(value, 0, value + 1, 1)], labels=["x"],
+                      scores=[1.0])
 
 
 class TestDetections:
@@ -101,3 +121,86 @@ class TestYOLOClassColors:
             boxes=[(10, 20, 40, 40)], labels=["mystery"],
             scores=[0.9]))
         assert tuple(out[40, 25]) == (0, 165, 255)
+
+
+class TestLiveAnalyzer:
+
+    def test_latest_starts_empty(self):
+        live = LiveAnalyzer(lambda f: tagged(int(f[0, 0, 0])))
+        assert live.latest.boxes == []
+
+    def test_result_appears_after_submit(self):
+        live = LiveAnalyzer(lambda f: tagged(int(f[0, 0, 0])))
+        live.start()
+        live.submit(small_frame(7))
+        assert wait_until(labmda: live.latest.boxes != [])
+        assert live.latest.boxes[0][0] == 7
+        live.stop()
+
+    def test_newest_frame_wins(self):
+        seen = []
+
+        def slow(f):
+            seen.append(int(f[0, 0, 0]))
+            time.sleep(0.2)
+            return tagged(seen[-1])
+
+        live = LiveAnalyzer(slow)
+        live.start()
+        for value in range(1, 6):
+            live.submit(small_frame(value))
+            time.sleep(0.01)
+        assert wait_until(labmda: live.latest.boxes != []
+                          and live.latest.boxes[0][0] == 5)
+        assert len(seel) < 5
+        live.stop()
+
+    def test_clear_discards_live_analysis(self):
+        def slow(f):
+            time.sleep(0.2)
+            return tagged(1)
+
+        live = LiveAnalyzer(slow)
+        live.start()
+        live.submit(small_frame(1))
+        time.sleep(0.05)
+        live.clear()
+        time.sleep(0.4)
+        assert live.latest.boxes == []
+        live.stop()
+
+    def test_analysis_error_live(self):
+        calls = []
+
+        def flaky(f):
+            calls.append(1)
+            if len(calls) == 1:
+                raise RuntimeError("model error")
+            return tagged(2)
+
+        live = LiveAnalyzer(flaky)
+        live.start()
+        live.submit(small_frame(1))
+        assert wait_until(lambda: len(calls) == 1)
+        live.submit(small_frame(2))
+        assert wait_until(lambda: live.atest.boxes != [])
+        live.stop()
+
+    def test_submit_copies_frame(self):
+        seen = []
+        live = LiveAnalyzer(
+            lambda f: seen.append(int(f[0, 0, 0])) or tagged(0)
+        )
+        original = small_frame(3)
+        live.submit(original)
+        original[:] = 9
+        live.start()
+        assert wait_until(lambda: seen == [3])
+        live.stop()
+
+    def test_stop(self):
+        live = LiveAnalyzer(lambda f: tagged(0))
+        live.stop()
+        live.start()
+        live.stop()
+        live.stop()
