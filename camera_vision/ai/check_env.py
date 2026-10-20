@@ -14,8 +14,9 @@ Make sure the DINOv3 probe and YOLO models are trained and ready.
 import numpy as np
 import sys
 import time
-from importlib import import_module
 from pathlib import Path
+
+from ai import dino
 
 
 def main() -> int:
@@ -40,26 +41,8 @@ def main() -> int:
     else:
         print(" (no CUDA GPU found; analysis will run slower)")
 
-    repo = Path(str(Path(__file__).resolve().parents[3] / "dinov3"))
-    weights = Path(
-        str(
-            Path(__file__).resolve().parents[1]
-            / "models"
-            / "dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
-        )
-    )
-
-    for label, path in (("dinov3 repo", repo), ("weights", weights)):
-        if not path.exists():
-            print(f"missing {label}: {path}")
-            print("See the Setup section of the README.")
-            return 1
-
-    sys.path.insert(0, str(repo))
-    backbones = import_module("dinov3.hub.backbones")
-    model = getattr(backbones, "dinov3_vits16")(weights=str(weights))
-    model = model.to(device).eval()
-    print(f"loaded dinov3_vits16, {model.__class__.__name__}")
+    model = dino.load_backbone()
+    print(f"loaded {dino.BACKBONE}, {model.__class__.__name__}")
 
     x = torch.zeros(1, 3, 224, 224, device=device)
     with torch.no_grad():
@@ -77,23 +60,24 @@ def main() -> int:
     print(f"{elapsed / 10 * 1000:.1f} ms per 224x224 pass, 10 passes")
 
     models = Path(__file__).resolve().parents[1] / "models"
-    for name in ("probe.joblib", "yolo_codebrim.pt"):
+    for name in (dino.PROBE.name, yolo.MODEL.name):
         found = (models / name).exists()
 
     # DINOv3 probe and YOLO model verification
 
     models = Path(__file__).resolve().parents[1] / "models"
-    for name in ("probe.joblib", "yolo_codebrim.pt"):
+    for name in (dino.PROBE.name, yolo.MODEL.name):
         found = (models / name).exists()
         print(f"{name}: {'found' if found else 'not trained yet'}")
 
     try:
         from ultralytics import YOLO
+        from ai import yolo
     except ImportError:
         print('ultralytics is not installed, run pip install -e ".[dev,ai]"')
         return 1
-    if (models / "yolo_codebrim.pt").exists():
-        yolo = YOLO(str(models / "yolo_codebrim.pt"))
+    if (models / yolo.MODEL).exists():
+        yolo = YOLO(str(models / yolo.MODEL.name))
         frame = np.zeros((720, 1280, 3), np.uint8)
         yolo(frame, verbose=False)
         start = time.perf_counter()

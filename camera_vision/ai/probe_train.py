@@ -127,7 +127,7 @@ def main() -> int:
     device = dino.pick_device()
     print(f"device: {device}")
     model = dino.load_backbone()
-    print("loaded dinov3_vits16")
+    print(f"loaded {dino.BACKBONE}")
 
     feats, labels = extract_features(
         items, model, device, args.batch

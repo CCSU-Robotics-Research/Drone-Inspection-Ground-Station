@@ -2,14 +2,22 @@
 
 import numpy as np
 
-from ultralytics import YOLO
 from ai.detect import Detections
+from pathlib import Path
+from ultralytics import YOLO
+
+# WHich trained YOLO size to use: n, s, m, l, x
+SIZE = "s"
+MODEL = (
+    Path(__file__).resolve().parents[1]
+    / "models" / f"yolo_codebrim_{SIZE}.pt"
+)
 
 
 class YoloDetector:
 
-    def __init__(self):
-        self.model = YOLO("yolo11n.pt")
+    def __init__(self, model_path=MODEL):
+        self.model = YOLO(model_path)
 
     def analyze(self, frame: np.ndarray) -> Detections:
         result = self.model(frame, iou=0.3, verbose=False)[0]
