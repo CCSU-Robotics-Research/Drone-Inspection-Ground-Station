@@ -183,7 +183,7 @@ class TestLiveAnalyzer:
         live.submit(small_frame(1))
         assert wait_until(lambda: len(calls) == 1)
         live.submit(small_frame(2))
-        assert wait_until(lambda: live.atest.boxes != [])
+        assert wait_until(lambda: live.latest.boxes != [])
         live.stop()
 
     def test_submit_copies_frame(self):
