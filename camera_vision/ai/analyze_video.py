@@ -50,9 +50,7 @@ def main() -> int:
     json_path = out_path.with_suffix(".json")
 
     probe = DinoDefectDetector()
-    yolo = YoloDetector(
-        Path(__file__).resolve().parents[1] / "models" / "yolo_codebrim.pt"
-    )
+    yolo = YoloDetector()
 
     cap = cv2.VideoCapture(str(src))
     if not cap.isOpened():
