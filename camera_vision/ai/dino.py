@@ -3,7 +3,7 @@
 Loads the DINOv3 backbone module from a local clone, plus
 the LVD-1689M normalization baked into preprocessing.
 
-``DinoCrackDetector`` implements the ``Detector`` protocol by
+``DinoDefectDetector`` implements the ``Detector`` protocol by
 sliding a 224 px window over the frame, scoring each tile with
 the trained probe, and returns the scores as a coarse heatmap that
 ``ai.annotate`` upscales.
@@ -24,7 +24,7 @@ TILE = 224
 STRIDE = 112
 
 # Model constants for repeated use or in other files. Choose from
-# dinov3_vits16, dinv3_vits16plus, dinov3_vitb16 dinov3_vitl16,
+# dinov3_vits16, dinov3_vits16plus, dinov3_vitb16, dinov3_vitl16,
 # dinov3_vith16plus. These constants, when referenced from here,
 # are for check_env and analyze_video for offline work. Live annotation
 # backbones are specified with parameters below.

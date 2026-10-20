@@ -9,7 +9,7 @@ is available in ``datasets/``.
 Each sample gets five 0/1 flags (Crack, Spallation,
 Efflorescence, ExposedBars, CorrosionStain). A sample can have
 several. One logistic regression per defect is fit on an
-80/20 split and the probe is saved to ``models/probe.joblib``.
+80/20 split and the probe is saved to ``models/probe_<backbone>.joblib``.
 """
 
 import argparse
