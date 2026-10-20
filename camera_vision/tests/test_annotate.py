@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+import threading
 import time
 
 from ai.annotate import draw
@@ -139,20 +140,26 @@ class TestLiveAnalyzer:
 
     def test_newest_frame_wins(self):
         seen = []
+        busy = threading.Event()
+        release = threading.Event()
 
-        def slow(f):
+        def gated(f):
             seen.append(int(f[0, 0, 0]))
-            time.sleep(0.2)
+            busy.set()
+            release.wait(timeout=3)
             return tagged(seen[-1])
 
-        live = LiveAnalyzer(slow)
+        live = LiveAnalyzer(gated)
         live.start()
-        for value in range(1, 6):
+        live.submit(small_frame(1))
+        assert busy.wait(timeout=3)
+        for value in range(2, 6):
             live.submit(small_frame(value))
-            time.sleep(0.01)
+        release.set()
+        assert wait_until(lambda: len(seen) >= 2)
+        assert seen == [1, 5], seen
         assert wait_until(lambda: live.latest.boxes != []
                           and live.latest.boxes[0][0] == 5)
-        assert len(seel) < 5
         live.stop()
 
     def test_clear_discards_live_analysis(self):
