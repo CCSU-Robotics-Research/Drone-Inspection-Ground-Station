@@ -133,7 +133,7 @@ class TestLiveAnalyzer:
         live = LiveAnalyzer(lambda f: tagged(int(f[0, 0, 0])))
         live.start()
         live.submit(small_frame(7))
-        assert wait_until(labmda: live.latest.boxes != [])
+        assert wait_until(lambda: live.latest.boxes != [])
         assert live.latest.boxes[0][0] == 7
         live.stop()
 
