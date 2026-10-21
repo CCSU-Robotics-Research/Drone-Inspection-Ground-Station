@@ -20,7 +20,7 @@ class YoloDetector:
         self.model = YOLO(model_path)
 
     def analyze(self, frame: np.ndarray) -> Detections:
-        result = self.model(frame, iou=0.3, verbose=False)[0]
+        result = self.model(frame, conf=0.4, iou=0.3, verbose=False)[0]
         detections = Detections()
 
         for box, cid, score in zip(result.boxes.xyxy.tolist(),

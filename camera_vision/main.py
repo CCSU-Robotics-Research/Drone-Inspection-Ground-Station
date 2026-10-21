@@ -36,6 +36,7 @@ from record import VideoRecorder
 from stream import FrameStreamer
 
 _CAPTURE_CARD = "2"
+_HEAT_THRESHOLD = 0.5
 
 _LOG = logging.getLogger("main")
 
@@ -81,7 +82,7 @@ def _start_annotation():
 
     def analyze(frame):
         return fuse(probe.analyze(frame), yolo.analyze(frame),
-                    frame.shape[:2], 0.5)
+                    frame.shape[:2], _HEAT_THRESHOLD)
 
     analyzer = LiveAnalyzer(analyze)
     analyzer.start()
@@ -226,7 +227,7 @@ def run(device, stream_enabled: bool, record_on_start: bool,
             if annotating:
                 analyzer.submit(frame)
                 frame = draw(frame, analyzer.latest,
-                             heat_threshold=0.5)
+                             heat_threshold=_HEAT_THRESHOLD)
 
             rec_visible = (
                 recorder.is_recording
