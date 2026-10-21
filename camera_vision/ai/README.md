@@ -22,14 +22,14 @@ The install is shared with camera_vision.
 ## Setup
 
 1. Clone https://github.com/facebookresearch/dinov3 next to this repo. The repo contains only code
-2. Place `dinov3_vits16_pretrain_lvd1689m-08c60483.pth` inside `camera_vision/models`. The weights are distributed by Meta under the DINOv3 License via a request form. You will get an email with time-limited download links. Do not commit or redistribute the weights.
-3. Run `python -m ai.check_env`. You should see the GPU name, `loaded dinov3_vits16`, and a per-pass inference time in ms.
+2. Place the DINOv3 weights inside `camera_vision/models`. ive annotation needs ViT-S (`dinov3_vits16_pretrain_lvd1689m-08c60483.pth`); offline analysis uses ViT-H+ (`dinov3_vith16plus_pretrain_lvd1689m-7c1da9a5.pth`) by default. The weights are distributed by Meta under the DINOv3 License via a request form. You will get an email with time-limited download links. Do not commit or redistribute the weights.
+3. Run `python -m ai.check_env`. You should see the GPU name, `loaded dinov3_vit16plus` (the `BACKBONE` default in `dino.py`), and a per-pass inference time in ms. It also reports whether the trained probe and YOLO model exist.
 
 `models/` and `datasets/` are gitignored. Once all the training is complete, `models/` contains:
-* `dinov3_vits16_pretrain_lvd1689m-08c60483.pth`, the DINOv3 weights from Meta
-* `probe.joblib`, the custom trained DINOv3 classifier probe
-* `yolo11n.pt`, aka YOLO's starting weights. Downloaded automatically on first use
-* `yolo_codebrim.pt`, the custom trained YOLO model
+* `dinov3_<size>_pretrain_lvd1689m-*.pth`, the DINOv3 weights from Meta
+* `probe_<backbone>.joblib`, the custom trained DINOv3 classifier probe, one per backbone size
+* `yolo11<size>.pt`, aka YOLO's starting weights. Downloaded automatically on first use, and `yolo26n.pt`, used by YOLO's GPU self-check during training
+* `yolo_codebrim_<size>.pt`, the custom trained YOLO models
 * `yolo_runs/`, YOLO's training logs and charts
 
 ## Datasets
@@ -46,14 +46,14 @@ The classes for box colors are: Crack (orange), Spallation (blue), Efflorescence
 
 Once the datasets are ready, you can train your models.
 
-* `python -m ai.probe_train` - Trains the DINOv3 probe on Kaggle and CODEBRIM together, prints validation F1 per defect, and saves `models/probe_<backbone>.joblib`. To change the size, change the constant in DINOv3.
-* `python -m ai.yolo_train --size {n,s,m,l,x}` - The first run copies CODEBRIM into `datasets/codebrim_yolo` in YOLO's format, shrunk to 1024 px, with EXIF rotation removed. This is because CODEBRIM's boxes were drawn on the unrotated photos. It then trains for 100 epochs and saves the best checkpoint as `models/yolo_codebrim_<size>.pt`. To redo the copy step, delete `datasets/codebrim_yolo`.
+* `python -m ai.probe_train` - Trains the DINOv3 probe on Kaggle and CODEBRIM together, prints validation F1 per defect, and saves `models/probe_<backbone>.joblib`. To change the size, set `BACKBONE` in `dino.py`.
+* `python -m ai.yolo_train --size {n,s,m,l,x}` - The first run copies CODEBRIM into `datasets/codebrim_yolo` in YOLO's format, shrunk to 1024 px, with EXIF rotation removed. This is because CODEBRIM's boxes were drawn on the unrotated photos. It then trains for up to 100 epochs and saves the best checkpoint as `models/yolo_codebrim_<size>.pt`. To redo the copy step, delete `datasets/codebrim_yolo`. Note that `SIZE` in `yolo.py` selects which trained model the detector uses.
 
 ## Analyzing Video
 
 * `python -m ai.analyze_video recordings\clip.MOV` - Runs both models and merges their annotations (DINOv3's heatmap and YOLO's boxes), then outputs an annotated video file.
 * `--frame-interval` sets the sampling rate of frames for analysis. The default is 5, so that means 6 frames will be analyzed every second of a 30 FPS video. Frames in between show the most recent result. This is for computation power and readability purposes.
-* `--heat-threshold` is how much DINOv3's heat must be inside a YOLO box for the box to be kept
+* `--heat-threshold` is how confident DINOv3 must be before a tile is drawn red; a YOLO box is kept only if the heat inside it reaches this value
 
 For live annotation, note that `camera_vision/main.py` runs DINOv3 S and YOLO s via `LiveAnalyzer`. The video keeps camera speed while the analyzer works on the newest sampled frame. Annotations update as fast as the GPU allows.
 

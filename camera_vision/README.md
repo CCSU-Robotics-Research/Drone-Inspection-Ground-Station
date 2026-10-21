@@ -2,16 +2,16 @@
 
 This subdirectory handles camera processing on the ground station. The camera feed is transmitted from the drone wirelessly via VTX to VRX, which gets read into a capture card on the ground station. The ground station code then processes it and streams it to the HoloLens via the Unity repo. The ground station also plays the video back in an OpenCV window.
 
-The camera feed can also be recorded to the ground station disk for offline analysis with AI models DINOv3 and YOLO.
+The ground station also anntoates the feed live with AI defect detection using DINOv3 and YOLO models, shown in both the HoloLens and the local window. The unannotated feed can be recorded to disk for offline analysis.
 
 _NOTE: See [ai/README.md](ai/README.md) for setup, datasets, training, video analysis, and credits._
 
 ## Components
 
-* [main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station and streams to Unity. With `--no-stream` argument, the video feed is not sent to Unity.
+* [main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station; streams to Unity and runs live AI annotation
 * [read_feed.py](read_feed.py) - `CameraSource` handles reading from the capture device and produces frames. `FpsCounter` measures the FPS achieved.
 * [stream.py](stream.py) - Streams the feed TO unity. Includes `FrameStreamer` which streams via TCP, plus the framing helpers and encoder for JPEG.
-* [commands.py](commands.py) - UDP listener for HoloLens FOV commands. Namely for recording start/stop
+* [commands.py](commands.py) - UDP listener for HoloLens FOV commands to toggle recording and annotation.
 * [ai/](ai/) - Defect detection with DINOv3 and YOLO. See [ai/README.md](ai/README.md) for details.
 * [recordings/](recordings/) - Storage for offline recordings. This is gitignored so it may not exist until a recording is captured.
 * [models/](models/) - Model weights and trained models. See the [ai/README.md](ai/README.md) file for details on what goes here.
@@ -67,7 +67,7 @@ The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expecte
 
 ### Command Protocol
 
-Things to know about the HoloLens to ground station remote control for video recording; the Unity repo conforms to this:
+Things to know about the HoloLens to ground station remote control for video recording and annotation; the Unity repo conforms to this:
 
 * `camera_vision` listens for UDP datagrams on `127.0.0.1:5011` for commands from Unity.
 * Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`, `annotate:on`, `annotate:off`, `annotate:toggle`.
