@@ -11,8 +11,10 @@ Usage::
     python main.py --record           # records immediately
     python main.py -v                 # debug logging
     python main.py --no-stream        # blocks Unity streaming
+    python main.py --annotate         # starts annotation immediately
 
-Press r at anytime to toggle recording.
+Press r at anytime to toggle recording, and a to toggle live AI
+annotation.
 
 Press q or Esc in the video window to quit. You may have to change
 the ``_CAPTURE_CARD`` field index below to get the correct source.
@@ -26,12 +28,15 @@ import time
 
 import cv2
 
+from ai.annotate import draw
+from ai.detect import LiveAnalyzer, fuse
 from commands import CommandListener
 from read_feed import CameraSource, FpsCounter
 from record import VideoRecorder
 from stream import FrameStreamer
 
 _CAPTURE_CARD = "2"
+_HEAT_THRESHOLD = 0.5
 
 _LOG = logging.getLogger("main")
 
@@ -62,6 +67,29 @@ def _draw_fps(frame, fps: float) -> None:
     )
 
 
+def _start_annotation():
+    """Load the live models and starts background analyzer."""
+    _LOG.info("Loading AI models for live annotation...")
+    try:
+        from ai.dino import DinoDefectDetector
+        from ai.yolo import YoloDetector
+
+        probe = DinoDefectDetector(backbone="dinov3_vits16")
+        yolo = YoloDetector()
+    except Exception:
+        _LOG.exception("AI models failed to load; annotation off")
+        return None
+
+    def analyze(frame):
+        return fuse(probe.analyze(frame), yolo.analyze(frame),
+                    frame.shape[:2], _HEAT_THRESHOLD)
+
+    analyzer = LiveAnalyzer(analyze)
+    analyzer.start()
+    _LOG.info("Live annotation ready")
+    return analyzer
+
+
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(
@@ -84,6 +112,11 @@ def parse_args() -> argparse.Namespace:
         help="does not send frames over TCP for Unity",
     )
     parser.add_argument(
+        "--annotate",
+        action="store_true",
+        help="starts annotating immediately, toggle with a"
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
@@ -92,11 +125,20 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run(device, stream_enabled: bool, record_on_start: bool) -> None:
+def run(device, stream_enabled: bool, record_on_start: bool,
+        annotate_on_start: bool) -> None:
     """Open the camera and display frames until quit/stall."""
+    analyzer = _start_annotation()
+    annotating = annotate_on_start and analyzer is not None
+
     source = CameraSource(device)
     source.open()
     recorder = VideoRecorder()
+
+    # Video speed for file inputs
+    frame_period = 1.0 / source.fps if (
+        isinstance(device, str) and source.fps
+    ) else 0.0
 
     streamer = None
     if stream_enabled:
@@ -121,6 +163,17 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
     if record_on_start:
         _toggle_recording()
 
+    # Turns live annotation on/off
+    def _set_annotation(on: bool) -> None:
+        nonlocal annotating
+        if analyzer is None:
+            _LOG.warning("Annotation unavailable since models did not load")
+            return
+        annotating = on
+        if not on:
+            analyzer.clear()
+        _LOG.info("Annotation %s", "on" if on else "off")
+
     stop_requested = False
 
     # Handling shutdowns
@@ -136,15 +189,26 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
         "record:start": lambda: recorder.start(
             (source.width, source.height), source.fps
         ),
-        "record:stop": recorder.stop
+        "record:stop": recorder.stop,
+        "annotate:toggle": lambda: _set_annotation(not annotating),
+        "annotate:on": lambda: _set_annotation(True),
+        "annotate:off": lambda: _set_annotation(False),
     })
     commands.start()
 
     fps_counter = FpsCounter()
     misses = 0
+    next_frame = time.monotonic()
 
     try:
         while not stop_requested:
+            if frame_period:
+                next_frame += frame_period
+                delay = next_frame - time.monotonic()
+                if delay > 0:
+                    time.sleep(delay)
+                else:
+                    next_frame = time.monotonic()
             frame = source.read()
             if frame is None:
                 misses += 1
@@ -156,8 +220,15 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
                 continue
             misses = 0
 
-            # Raw frame recording
+            # Raw frame recording before annotation
             recorder.write(frame)
+
+            # Send annotated window to stream and window
+            if annotating:
+                analyzer.submit(frame)
+                frame = draw(frame, analyzer.latest,
+                             heat_threshold=_HEAT_THRESHOLD)
+
             rec_visible = (
                 recorder.is_recording
                 and time.monotonic() % 1.0 < 0.5
@@ -183,8 +254,12 @@ def run(device, stream_enabled: bool, record_on_start: bool) -> None:
                 break
             elif key == ord("r"):
                 _toggle_recording()
+            elif key == ord("a"):
+                _set_annotation(not annotating)
     finally:
         commands.stop()
+        if analyzer is not None:
+            analyzer.stop()
         recorder.stop()
         if streamer is not None:
             streamer.stop()
@@ -203,7 +278,7 @@ def main() -> None:
     )
 
     device = int(args.device) if args.device.isdigit() else args.device
-    run(device, args.stream, args.record)
+    run(device, args.stream, args.record, args.annotate)
 
 
 if __name__ == "__main__":

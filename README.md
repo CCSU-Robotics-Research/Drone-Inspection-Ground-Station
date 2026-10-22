@@ -17,3 +17,7 @@ This repository houses all of the components for the ground station of the drone
 ## Setup
 
 Each component of this repository is self-contained. Please refer to the corresponding README.md for setting up the different components.
+
+## Running the Full System
+
+Once each component is setup, run this `python launch.py` from the repository root. This starts gimbal teleoperation and camera vision together, each with its own venv, with live AI annotation on from the start. To stop everything, press Ctrl+C. If any component exits, the launcher kills all processes. To run each component on its own, see its corresponding README.

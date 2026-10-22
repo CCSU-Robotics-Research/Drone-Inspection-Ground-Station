@@ -14,9 +14,6 @@ Make sure the DINOv3 probe and YOLO models are trained and ready.
 import numpy as np
 import sys
 import time
-from pathlib import Path
-
-from ai import dino
 
 
 def main() -> int:
@@ -30,6 +27,7 @@ def main() -> int:
             'run: pip install -e ".[dev,ai]"'
         )
         return 1
+    from ai import dino
 
     # DINOv3 backbone verification
 
@@ -65,24 +63,24 @@ def main() -> int:
 
     # DINOv3 probe and YOLO model verification
 
-    models = Path(__file__).resolve().parents[1] / "models"
-    for name in (dino.PROBE.name, yolo.MODEL.name):
-        found = (models / name).exists()
-        print(f"{name}: {'found' if found else 'not trained yet'}")
-
     try:
         from ultralytics import YOLO
         from ai import yolo
     except ImportError:
         print('ultralytics is not installed, run pip install -e ".[dev,ai]"')
         return 1
-    if (models / yolo.MODEL).exists():
-        yolo = YOLO(str(models / yolo.MODEL.name))
+
+    for path in (dino.PROBE, yolo.MODEL):
+        found = path.exists()
+        print(f"{path.name}: {'found' if found else 'not trained yet'}")
+
+    if yolo.MODEL.exist():
+        yolo_model = YOLO(str(yolo.MODEL))
         frame = np.zeros((720, 1280, 3), np.uint8)
-        yolo(frame, verbose=False)
+        yolo_model(frame, verbose=False)
         start = time.perf_counter()
         for _ in range(10):
-            yolo(frame, verbose=False)
+            yolo_model(frame, verbose=False)
         elapsed = time.perf_counter() - start
         print(f"YOLO OK, {elapsed / 10 * 1000:.1f} ms per 720p frame")
     return 0

@@ -23,7 +23,7 @@ _ROOT = Path(__file__).resolve().parent
 # their main.py files.
 _COMPONENTS = [
     ("GIMBAL", "gimbal_teleoperation", []),
-    ("CAMERA", "camera_vision", []),
+    ("CAMERA", "camera_vision", ["--annotate"]),
 ]
 
 

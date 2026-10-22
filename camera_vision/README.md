@@ -2,16 +2,16 @@
 
 This subdirectory handles camera processing on the ground station. The camera feed is transmitted from the drone wirelessly via VTX to VRX, which gets read into a capture card on the ground station. The ground station code then processes it and streams it to the HoloLens via the Unity repo. The ground station also plays the video back in an OpenCV window.
 
-The camera feed can also be recorded to the ground station disk for offline analysis with AI models DINOv3 and YOLO.
+The ground station also anntoates the feed live with AI defect detection using DINOv3 and YOLO models, shown in both the HoloLens and the local window. The unannotated feed can be recorded to disk for offline analysis.
 
 _NOTE: See [ai/README.md](ai/README.md) for setup, datasets, training, video analysis, and credits._
 
 ## Components
 
-* [main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station and streams to Unity. With `--no-stream` argument, the video feed is not sent to Unity.
+* [main.py](main.py) - Entry point. Display loop with an FPS overlay on the ground station; streams to Unity and runs live AI annotation
 * [read_feed.py](read_feed.py) - `CameraSource` handles reading from the capture device and produces frames. `FpsCounter` measures the FPS achieved.
 * [stream.py](stream.py) - Streams the feed TO unity. Includes `FrameStreamer` which streams via TCP, plus the framing helpers and encoder for JPEG.
-* [commands.py](commands.py) - UDP listener for HoloLens FOV commands. Namely for recording start/stop
+* [commands.py](commands.py) - UDP listener for HoloLens FOV commands to toggle recording and annotation.
 * [ai/](ai/) - Defect detection with DINOv3 and YOLO. See [ai/README.md](ai/README.md) for details.
 * [recordings/](recordings/) - Storage for offline recordings. This is gitignored so it may not exist until a recording is captured.
 * [models/](models/) - Model weights and trained models. See the [ai/README.md](ai/README.md) file for details on what goes here.
@@ -33,15 +33,17 @@ python main.py --device clip.mp4    # Play a video
 python main.py --record             # Start recording immediately
 python main.py --no-stream          # Playback only, no Unity stream
 python main.py -v                   # Debug logging
+python main.py --annotate           # Start annotating immediately
 ```
 
 6. To start/stop recording, press `r`. An indicator will show recording in progress.
-7. To quit, press `q` or `Esc`.
-8. For troubleshooting camera behavior, see _Camera Notes_ section below.
+7. To turn live AI annotation on/off, press `a`. The AI models load when the program starts. If they can't load, the camera runs without annotation. For model setup, see [ai/README.md](ai/README.md).
+8. To quit, press `q` or `Esc`.
+9. For troubleshooting camera behavior, see _Camera Notes_ section below.
 
 ## Streaming to Unity
 
-`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. Note the FPS indicator is not visible via HoloLens, but recording indicator is.
+`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. Note the FPS indicator is not visible via HoloLens, but recording indicator is. Annotations appear in both HoloLens stream and the local window. Recordings stay unannotated.
 
 ### Video Transmission Protocol
 
@@ -63,12 +65,12 @@ The recorder writes MJPG at quality 95 in `.avi` format. Storage outputs expecte
 * Recordings capture the raw feed from the camera without any annotations or overlays.
 * Files are auto-named `rec_YYYYMMDD_HHMMSS.avi` and can be found in `recordings/`.
 
-### Recording Command Protocol
+### Command Protocol
 
-Things to know about the HoloLens to ground station remote control for video recording; the Unity repo conforms to this:
+Things to know about the HoloLens to ground station remote control for video recording and annotation; the Unity repo conforms to this:
 
 * `camera_vision` listens for UDP datagrams on `127.0.0.1:5011` for commands from Unity.
-* Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`.
+* Commands are in UTF-8 format: `record:start`, `record:stop`, `record:toggle`, `annotate:on`, `annotate:off`, `annotate:toggle`.
 * Unknown commands are ignored.
 
 ## Camera Notes

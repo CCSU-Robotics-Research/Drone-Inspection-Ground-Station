@@ -3,7 +3,7 @@
 Loads the DINOv3 backbone module from a local clone, plus
 the LVD-1689M normalization baked into preprocessing.
 
-``DinoCrackDetector`` implements the ``Detector`` protocol by
+``DinoDefectDetector`` implements the ``Detector`` protocol by
 sliding a 224 px window over the frame, scoring each tile with
 the trained probe, and returns the scores as a coarse heatmap that
 ``ai.annotate`` upscales.
@@ -24,8 +24,10 @@ TILE = 224
 STRIDE = 112
 
 # Model constants for repeated use or in other files. Choose from
-# dinov3_vits16, dinv3_vits16plus, dinov3_vitb16 dinov3_vitl16,
-# dinov3_vith16plus
+# dinov3_vits16, dinov3_vits16plus, dinov3_vitb16, dinov3_vitl16,
+# dinov3_vith16plus. These constants, when referenced from here,
+# are for check_env and analyze_video for offline work. Live annotation
+# backbones are specified with parameters below.
 BACKBONE = "dinov3_vith16plus"
 MODELS = Path(__file__).resolve().parents[1] / "models"
 PROBE = MODELS / f"probe_{BACKBONE}.joblib"
@@ -37,15 +39,16 @@ def pick_device() -> "torch.device":
     )
 
 
-def load_backbone():
-    """Load the specified DINOv3 backbone in eval mode."""
+def load_backbone(backbone: str = BACKBONE):
+    """Load the specified DINOv3 backbone in eval mode, or default if
+    unspecified"""
     repo = Path(__file__).resolve().parents[3] / "dinov3"
-    weights = next(MODELS.glob(f"{BACKBONE}_pretrain_lvd1689m-*.pth"), None)
+    weights = next(MODELS.glob(f"{backbone}_pretrain_lvd1689m-*.pth"), None)
     if weights is None:
-        raise FileNotFoundError(f"no {BACKBONE} weights in {MODELS}")
+        raise FileNotFoundError(f"no {backbone} weights in {MODELS}")
     sys.path.insert(0, str(repo))
     backbones = import_module("dinov3.hub.backbones")
-    model = getattr(backbones, BACKBONE)(weights=str(weights))
+    model = getattr(backbones, backbone)(weights=str(weights))
     return model.to(pick_device()).eval()
 
 
@@ -84,10 +87,11 @@ def tile_starts(
 class DinoDefectDetector:
     """DINOv3 features + trained defect probe."""
 
-    def __init__(self, batch_size: int = 64):
+    def __init__(self, backbone: str = BACKBONE,
+                 batch_size: int = 64):
         self.device = pick_device()
-        self.model = load_backbone()
-        self.probe = joblib.load(PROBE)
+        self.model = load_backbone(backbone)
+        self.probe = joblib.load(MODELS / f"probe_{backbone}.joblib")
         self.batch_size = batch_size
 
     def analyze(self, frame: np.ndarray) -> Detections:
