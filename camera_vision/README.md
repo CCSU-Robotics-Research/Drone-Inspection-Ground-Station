@@ -43,7 +43,7 @@ python main.py --annotate           # Start annotating immediately
 
 ## Streaming to Unity
 
-`python main.py` sends the feed to the Unity repo by default. To omit streaming, use `python main.py --no-stream`. Note the FPS indicator is not visible via HoloLens, but recording indicator is. Annotations appear in both HoloLens stream and the local window. Recordings stay unannotated.
+`python main.py` sends the feed to the Unity repo by default with an FPS counter. To omit streaming, use `python main.py --no-stream`. Annotations appear in both HoloLens stream and the local window. Recordings are unannotated and have no overlays/FPS counter.
 
 ### Video Transmission Protocol
 
