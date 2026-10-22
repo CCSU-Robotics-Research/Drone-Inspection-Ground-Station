@@ -17,9 +17,11 @@ from pathlib import Path
 import cv2
 
 from ai import annotate
-from ai.dino import DinoDefectDetector
 from ai.detect import Detections, fuse
-from ai.yolo import YoloDetector
+
+from ai.dino import BACKBONE, DinoDefectDetector
+from ai.yolo import SIZE, YoloDetector
+
 from datetime import datetime
 
 
@@ -43,7 +45,13 @@ def main() -> int:
     if not src.exists():
         print(f"missing video: {src}")
         return 1
-    out_path = src.with_name(f"{src.stem}_{datetime.now():%Y%m%d_%H%M%S}.avi")
+    output = Path(__file__).resolve().parents[1] / "analysis_outputs"
+    output.mkdir(exist_ok=True)
+
+    out_path = output / (
+        f"{src.stem}_{BACKBONE}_yolo-{SIZE}_"
+        f"{datetime.now():%Y%m%d_%H%M%S}.avi"
+    )
 
     probe = DinoDefectDetector()
     yolo = YoloDetector()

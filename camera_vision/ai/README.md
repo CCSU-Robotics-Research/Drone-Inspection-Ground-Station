@@ -16,7 +16,7 @@ The install is shared with camera_vision.
 * [yolo.py](yolo.py) - Houses ``YoloDetector``, which wraps an Ultralytics YOLO model.
 * [probe_train.py](probe_train.py) - Trains the custom DINOv3 probe.
 * [yolo_train.py](yolo_train.py) - Trains the YOLO model.
-* [analyze_video.py](analyze_video.py) - Analyzes and annotates a recorded video offline, outputs the annotated video.
+* [analyze_video.py](analyze_video.py) - Analyzes and annotates a recorded video offline, outputs the annotated video [to analysis_outputs/](analysis_outputs/)
 * [check_env.py](check_env.py) - Verifies `torch`, the GPU, and DINOv3 loading on the machine.
 
 ## Setup

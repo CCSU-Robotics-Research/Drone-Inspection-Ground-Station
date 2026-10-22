@@ -15,6 +15,7 @@ _NOTE: See [ai/README.md](ai/README.md) for setup, datasets, training, video ana
 * [ai/](ai/) - Defect detection with DINOv3 and YOLO. See [ai/README.md](ai/README.md) for details.
 * [recordings/](recordings/) - Storage for offline recordings. This is gitignored so it may not exist until a recording is captured.
 * [models/](models/) - Model weights and trained models. See the [ai/README.md](ai/README.md) file for details on what goes here.
+* [analysis_outputs/](analysis_outputs/) - Annotated videos from offline analysis are saved here
 * [datasets/](datasets/) - Training datasets (gitignored). See [ai/README.md](ai/README.md) for what goes here.
 * [tests/](tests/) - Unit tests for the scripts via `pytest`.
 
