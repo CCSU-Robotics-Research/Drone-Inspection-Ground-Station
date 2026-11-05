@@ -17,8 +17,8 @@
     },
     "mapping": {
         "invert_roll": true,
-        "invert_pitch": false,
-        "invert_yaw": true,
+        "invert_pitch": true,
+        "invert_yaw": false,
         "roll_offset": 0.0,
         "pitch_offset": 0.0,
         "yaw_offset": 0.0
