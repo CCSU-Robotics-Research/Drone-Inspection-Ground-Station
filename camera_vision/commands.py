@@ -13,7 +13,6 @@ _LOG = logging.getLogger(__name__)
 
 COMMAND_HOST = "127.0.0.1"
 COMMAND_PORT = 5011
-_RECV_BUFFER = 256
 
 
 class CommandListener:
