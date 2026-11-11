@@ -1,5 +1,5 @@
 # Continuous integration (CI) for camera vision. This CI workflow
-# only runs when gimbal code files (or this file) are altered.
+# only runs when camera code files (or this file) are altered.
 
 name: camera-vision
 
