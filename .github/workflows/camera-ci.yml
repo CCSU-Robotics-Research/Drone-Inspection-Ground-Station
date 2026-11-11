@@ -8,10 +8,10 @@ on:
     paths:
       - "camera_vision/**"
       - ".github/workflows/camera-ci.yml"
-    pull_request:
-      paths:
-        - "camera_vision/**"
-        - ".github/workflows/camera-ci.yml"
+  pull_request:
+    paths:
+      - "camera_vision/**"
+      - ".github/workflows/camera-ci.yml"
 
 jobs:
   test:
