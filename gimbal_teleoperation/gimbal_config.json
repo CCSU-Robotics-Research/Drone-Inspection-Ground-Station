@@ -8,7 +8,7 @@
         "baud": 115200
     },
     "control": {
-        "update_hz": 10
+        "update_hz": 60
     },
     "limits": {
         "roll": [-45.0, 45.0],
